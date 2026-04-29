@@ -1,11 +1,5 @@
-//
-//  PokeSimApp.swift
-//  PokeSim
-//
-//  Created by Andy Wong on 4/28/26.
-//
-
 import SwiftUI
+import SwiftData
 
 @main
 struct PokeSimApp: App {
@@ -13,5 +7,6 @@ struct PokeSimApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: PokemonTeam.self)
     }
 }

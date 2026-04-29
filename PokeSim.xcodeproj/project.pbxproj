@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C055B5E22FA1380C00A1D59B /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = C055B5E12FA1380C00A1D59B /* Flow */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C055B5AB2FA1379D00A1D59B /* PokeSim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeSim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C055B5E22FA1380C00A1D59B /* Flow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = PokeSim;
 			packageProductDependencies = (
+				C055B5E12FA1380C00A1D59B /* Flow */,
 			);
 			productName = PokeSim;
 			productReference = C055B5AB2FA1379D00A1D59B /* PokeSim.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = C055B5A22FA1379D00A1D59B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C055B5AC2FA1379D00A1D59B /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C055B5E12FA1380C00A1D59B /* Flow */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
+			productName = Flow;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C055B5A32FA1379D00A1D59B /* Project object */;
 }

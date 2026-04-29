@@ -1,24 +1,27 @@
-//
-//  ContentView.swift
-//  PokeSim
-//
-//  Created by Andy Wong on 4/28/26.
-//
-
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    let pokemonModel = PokemonModel.shared
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            Tab("Home", systemImage: "house") {
+                HomeView()
+            }
+            
+            Tab("Teams", systemImage: "rectangle.on.rectangle.angled") {
+                TeamsView()
+            }
+            
+            Tab(role: .search) {
+                SearchView()
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(PokemonTeam.preview)
 }
