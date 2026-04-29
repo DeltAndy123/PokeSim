@@ -157,8 +157,9 @@ struct HomeView: View {
             
             HStack(spacing: -16) {
                 ForEach(team.pokemonList.prefix(3)) { pokemon in
-                    Image("\(pokemon.id)")
-                        .resizable()
+//                    Image("\(pokemon.id)")
+//                        .resizable()
+                    PokemonImage(forSpecies: pokemon)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 36, height: 36)
                         .background(teamAccent.opacity(0.15), in: Circle())

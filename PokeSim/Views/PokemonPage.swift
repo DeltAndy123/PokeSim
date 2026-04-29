@@ -86,11 +86,11 @@ struct PokemonPage: View {
                         startRadius: 20,
                         endRadius: 150
                     )
-                    Image("\(selectedForm?.id ?? pokemon.id)")
-                        .interpolation(.none)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 200)
+                    if let form = selectedForm ?? pokemon.defaultForm {
+                        PokemonImage(for: form)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 200)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 250)
@@ -298,7 +298,10 @@ struct FormCard: View {
     
     var body: some View {
         VStack {
-            Image("\(form.id)")
+//            Image("\(form.id)")
+            PokemonImage(for: form)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 96, height: 96)
 
             Text(form.formName(fallback: speciesName))
                 .font(.headline)

@@ -49,7 +49,7 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                         Button { onPokemonTap(index) } label: {
                             if team.pokemonList.count > index {
                                 let pokemon = team.pokemonList[index]
-                                PokemonImage(pokemon: pokemon, pokemonClickable: true, style: pokemonCircleStyle)
+                                PokemonCircle(pokemon: pokemon, pokemonClickable: true, style: pokemonCircleStyle)
                                     .contextMenu {
                                         pokemonContextMenu?(index)
                                     }
@@ -80,10 +80,10 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                             NavigationLink {
                                 PokemonPage(pokemon: pokemon)
                             } label: {
-                                PokemonImage(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
+                                PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
                             }
                         } else {
-                            PokemonImage(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
+                            PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
                         }
                     } else {
                         Circle()
@@ -99,7 +99,7 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
     }
 }
 
-struct PokemonImage<S: ShapeStyle>: View {
+struct PokemonCircle<S: ShapeStyle>: View {
     let pokemon: PokemonSpecies
     let pokemonClickable: Bool
     let style: S
@@ -116,8 +116,9 @@ struct PokemonImage<S: ShapeStyle>: View {
                 endRadius: 30
             )
             
-            Image("\(pokemon.id)")
-                .resizable()
+//            Image("\(pokemon.id)")
+//                .resizable()
+            PokemonImage(forSpecies: pokemon)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80)
                 .background(style)

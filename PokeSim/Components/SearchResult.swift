@@ -25,8 +25,8 @@ struct SearchResult<D: View>: View {
                     .padding(.top, -6)
                 }
                 Spacer()
-                Image("\(pokemon.id)")
-                    .resizable()
+//                Image("\(pokemon.id)")
+                PokemonImage(forSpecies: pokemon)
                     .frame(width: 48, height: 48)
             }
         }

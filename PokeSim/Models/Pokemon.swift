@@ -18,6 +18,10 @@ import UniformTypeIdentifiers
        height
        weight
        base_experience
+       pokemonsprites {
+         front: sprites(path: "front_default")
+         official_front: sprites(path: "other.official-artwork.front_default")
+       }
        pokemontypes {
          type {
            name
@@ -44,6 +48,7 @@ import UniformTypeIdentifiers
          id
          pokemonformnames(where: {language_id: {_eq: 9}}) {
            name
+           pokemon_name
          }
        }
      }
@@ -111,6 +116,9 @@ struct Pokemon: Codable, Identifiable {
     let pokemonabilities: [PokemonAbilityWrapper]
     let pokemonstats: [PokemonStat]
     let pokemonforms: [PokemonForm]
+    let pokemonsprites: [PokemonSprite]
+    
+    var sprites: PokemonSprite? { pokemonsprites.first }
     
     var heightMeters: Double { Double(height) / 10 }
     var weightKilograms: Double { Double(weight) / 10 }
@@ -146,6 +154,11 @@ struct PokemonForm: Codable, Identifiable {
     var displayName: String { // Ex: Gigantamax Charizard
         pokemonformnames.first?.pokemon_name ?? ""
     }
+}
+
+struct PokemonSprite: Codable {
+    let front: String?
+    let official_front: String?
 }
 
 struct PokemonTypeWrapper: Codable {
