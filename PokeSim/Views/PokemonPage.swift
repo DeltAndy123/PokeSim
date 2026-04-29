@@ -2,7 +2,7 @@ import SwiftUI
 import Flow
 
 enum PokemonTab {
-    case about, stats, forms
+    case about, stats, forms, moves
 }
 
 struct PokemonPage: View {
@@ -33,6 +33,7 @@ struct PokemonPage: View {
                     Text("About").tag(PokemonTab.about)
                     Text("Stats").tag(PokemonTab.stats)
                     Text("Forms").tag(PokemonTab.forms)
+                    Text("Moves").tag(PokemonTab.moves)
                 }
                 .pickerStyle(.segmented)
                 .padding(.vertical, 8)
@@ -44,6 +45,8 @@ struct PokemonPage: View {
                     statsTab
                 case .forms:
                     formsTab
+                case .moves:
+                    movesTab
                 }
             }
             .frame(maxWidth: .infinity)
@@ -158,7 +161,7 @@ struct PokemonPage: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     // MARK: - Stats Tab
     var statsTab: some View {
         VStack {
@@ -188,6 +191,27 @@ struct PokemonPage: View {
             }
         }
         .contentMargins(2)
+    }
+    
+    // MARK: - Moves Tab
+    
+    func movesSection(form: Pokemon) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Moves")
+                .font(.caption)
+                .fontWeight(.bold)
+                .textCase(.uppercase)
+                .foregroundStyle(labelAccent(for: form))
+        }
+    }
+    
+    var movesTab: some View {
+        VStack {
+            HStack {
+                Text("Name Type Cat Pow Acc PP")
+                    
+            }
+        }
     }
 }
 
@@ -298,6 +322,8 @@ struct FormCard: View {
         )
     }
 }
+
+
 
 #Preview {
     NavigationStack {
