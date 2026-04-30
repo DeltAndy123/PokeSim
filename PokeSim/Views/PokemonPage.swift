@@ -9,7 +9,7 @@ struct PokemonPage: View {
     let pokemon: PokemonSpecies
     @Environment(\.colorScheme) private var colorScheme
     
-    @State private var activeTab: PokemonTab = .about
+    @State private var activeTab: PokemonTab = .moves
     @State private var selectedForm: Pokemon?
     
     private var selectedFormName: String {
@@ -194,22 +194,15 @@ struct PokemonPage: View {
     }
     
     // MARK: - Moves Tab
-    
-    func movesSection(form: Pokemon) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Moves")
-                .font(.caption)
-                .fontWeight(.bold)
-                .textCase(.uppercase)
-                .foregroundStyle(labelAccent(for: form))
-        }
-    }
-    
     var movesTab: some View {
         VStack {
             HStack {
-                Text("Name Type Cat Pow Acc PP")
-                    
+                Text("Level Name Type Cat Pow Acc PP")
+                    .frame(width: .infinity)
+                    .background(.gray)
+            }
+            ScrollView(.vertical) {
+                
             }
         }
     }
