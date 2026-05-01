@@ -44,7 +44,7 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                     .font(.title2.bold())
             }
             LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(0..<6) { index in
+                ForEach(0..<6, id: \.self) { (index: Int) in
                     if let onPokemonTap {
                         Button { onPokemonTap(index) } label: {
                             if team.pokemonList.count > index {
@@ -77,10 +77,12 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                     } else if team.pokemonList.count > index {
                         let pokemon = team.pokemonList[index]
                         if pokemonClickable {
-                            NavigationLink {
-                                PokemonPage(pokemon: pokemon)
-                            } label: {
-                                PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
+                            if let species = pokemon.species(from: PokemonCSVReader.shared.pokemonSpecies) {
+                                NavigationLink {
+                                    PokemonPage(species: species)
+                                } label: {
+                                    PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
+                                }
                             }
                         } else {
                             PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
@@ -100,15 +102,19 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
 }
 
 struct PokemonCircle<S: ShapeStyle>: View {
-    let pokemon: PokemonSpecies
+    let pokemon: CSVPokemon
     let pokemonClickable: Bool
     let style: S
+    
+    private var primaryType: PokemonType? {
+        pokemon.primaryType(from: PokemonCSVReader.shared.pokemonTypes)
+    }
 
     var body: some View {
         ZStack {
             RadialGradient(
                 colors: [
-                    pokemon.defaultForm?.primaryType?.colors.bg.opacity(0.3) ?? .clear,
+                    primaryType?.colors.bg.opacity(0.3) ?? .clear,
                     .clear
                 ],
                 center: .center,
@@ -116,11 +122,9 @@ struct PokemonCircle<S: ShapeStyle>: View {
                 endRadius: 30
             )
             
-//            Image("\(pokemon.id)")
-//                .resizable()
-            PokemonImage(forSpecies: pokemon)
+            PokemonImage(for: pokemon)
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 80)
+                .frame(width: 80, height: 80)
                 .background(style)
                 .clipShape(Circle())
                 .glassEffect(pokemonClickable ? .regular.interactive() : .regular)

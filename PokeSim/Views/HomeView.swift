@@ -2,9 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    private let pokemonModel = PokemonModel.shared
+    private let csvReader = PokemonCSVReader.shared
     
-    @Query var teams: [PokemonTeam]
+    @Query(sort: \PokemonTeam.sortIndex) private var teams: [PokemonTeam]
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     
@@ -22,8 +22,8 @@ struct HomeView: View {
     
     private var dominantType: PokemonType? {
         guard let team else { return nil }
-        let types = team.pokemonList.compactMap { $0.defaultForm?.primaryType }
-        return Dictionary(grouping: types, by: \.name)
+        let types = team.pokemonList.compactMap { $0.primaryType(from: csvReader.pokemonTypes) }
+        return Dictionary(grouping: types, by: \.id)
             .max(by: { $0.value.count < $1.value.count })?.value.first
     }
     private var textAccent: Color {
@@ -147,7 +147,7 @@ struct HomeView: View {
     }
     
     func miniTeamCard(_ team: PokemonTeam) -> some View {
-        let teamAccent = team.pokemonList.compactMap { $0.defaultForm?.primaryType }
+        let teamAccent = team.pokemonList.compactMap { $0.primaryType(from: csvReader.pokemonTypes) }
             .first?.colors.bg ?? .secondary
         
         return VStack(alignment: .leading, spacing: 4) {
@@ -157,9 +157,7 @@ struct HomeView: View {
             
             HStack(spacing: -16) {
                 ForEach(team.pokemonList.prefix(3)) { pokemon in
-//                    Image("\(pokemon.id)")
-//                        .resizable()
-                    PokemonImage(forSpecies: pokemon)
+                    PokemonImage(for: pokemon)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 36, height: 36)
                         .background(teamAccent.opacity(0.15), in: Circle())

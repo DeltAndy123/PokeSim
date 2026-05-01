@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C055B5E22FA1380C00A1D59B /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = C055B5E12FA1380C00A1D59B /* Flow */; };
+		C0BF29472FA40C3500AA9E77 /* CodableCSV in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF29462FA40C3500AA9E77 /* CodableCSV */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0BF29472FA40C3500AA9E77 /* CodableCSV in Frameworks */,
 				C055B5E22FA1380C00A1D59B /* Flow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,6 +73,7 @@
 			name = PokeSim;
 			packageProductDependencies = (
 				C055B5E12FA1380C00A1D59B /* Flow */,
+				C0BF29462FA40C3500AA9E77 /* CodableCSV */,
 			);
 			productName = PokeSim;
 			productReference = C055B5AB2FA1379D00A1D59B /* PokeSim.app */;
@@ -102,6 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
+				C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C055B5AC2FA1379D00A1D59B /* Products */;
@@ -260,6 +264,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9387Q4V22C;
@@ -277,6 +282,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.deltandy.PokeSim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -292,6 +298,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9387Q4V22C;
@@ -309,6 +316,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.deltandy.PokeSim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -351,6 +359,14 @@
 				minimumVersion = 3.1.1;
 			};
 		};
+		C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dehesa/CodableCSV";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.7;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -358,6 +374,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
 			productName = Flow;
+		};
+		C0BF29462FA40C3500AA9E77 /* CodableCSV */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */;
+			productName = CodableCSV;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

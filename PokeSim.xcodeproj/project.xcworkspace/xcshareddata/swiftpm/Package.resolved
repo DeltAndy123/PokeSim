@@ -1,6 +1,15 @@
 {
-  "originHash" : "00398ece5b8c1a1be5b1a79c6b5417558509a282b2721d1d128d58d127516896",
+  "originHash" : "c604f116f0d07960b36c6e87a63704473e03dc35ff1f9a777a52d789f60ad6b4",
   "pins" : [
+    {
+      "identity" : "codablecsv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dehesa/CodableCSV",
+      "state" : {
+        "revision" : "99ace2cfdfbc19108b529c021005fb57a460e715",
+        "version" : "0.6.7"
+      }
+    },
     {
       "identity" : "swiftui-flow",
       "kind" : "remoteSourceControl",

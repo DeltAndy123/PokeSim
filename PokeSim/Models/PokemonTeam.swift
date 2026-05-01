@@ -9,8 +9,10 @@ class PokemonTeam {
     var sortIndex: Int
     var pokemonIDs: [Int]
     
-    var pokemonList: [PokemonSpecies] {
-        pokemonIDs.compactMap { PokemonModel.shared.getSpecies(id: $0) }
+    var pokemonList: [CSVPokemon] {
+        pokemonIDs.compactMap { id in
+            PokemonCSVReader.shared.pokemon(byId: id)
+        }
     }
     
     init(name: String, sortIndex: Int = 0, pokemonIDs: [Int] = []) {

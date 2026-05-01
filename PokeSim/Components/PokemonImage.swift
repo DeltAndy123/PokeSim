@@ -1,24 +1,27 @@
 import SwiftUI
 
 struct PokemonImage: View {
-    let pokemon: Pokemon?
-    var spriteUrl: URL? {
-        URL(string: pokemon?.sprites?.official_front ?? "")
+    let pixelated: Bool = false
+    let spriteUrl: URL?
+    
+    init(for pokemon: CSVPokemon) {
+        spriteUrl = pokemon.spriteArtworkUrl
     }
     
-    init(forSpecies species: PokemonSpecies) {
-        self.pokemon = species.defaultForm
-    }
-    
-    init(for pokemon: Pokemon) {
-        self.pokemon = pokemon
+    init(forSpecies species: CSVPokemonSpecies) {
+        spriteUrl = species.spriteArtworkUrl
     }
     
     var body: some View {
         AsyncImage(url: spriteUrl) { image in
-            image
-                .resizable()
-                .interpolation(.none)
+            if pixelated {
+                image
+                    .resizable()
+                    .interpolation(.none)
+            } else {
+                image
+                    .resizable()
+            }
         } placeholder: {
             ProgressView()
         }

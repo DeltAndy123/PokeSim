@@ -6,15 +6,15 @@ struct SelectPokemonSheet: View {
     let team: PokemonTeam
     let pokemonIndex: Int
 
-    private let pokemonModel = PokemonModel.shared.root.data
+    private let csvReader = PokemonCSVReader.shared
 
     @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
-            List(pokemonModel.search(searchText)) { pokemon in
+            List(csvReader.searchSpecies(for: searchText)) { pokemon in
                 SearchResult(pokemon: pokemon) {
-                    PokemonPage(pokemon: pokemon)
+                    PokemonPage(species: pokemon)
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
                                 Button("Done", systemImage: "checkmark") {

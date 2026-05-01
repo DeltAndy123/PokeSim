@@ -2,8 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    let pokemonModel = PokemonModel.shared
-    
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
@@ -17,6 +15,9 @@ struct ContentView: View {
             Tab(role: .search) {
                 SearchView()
             }
+        }
+        .task {
+//            PokemonCSVReader()
         }
     }
 }

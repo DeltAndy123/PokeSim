@@ -21,16 +21,16 @@ struct TypeBadge: View {
 
 #Preview {
     VStack(spacing: 16) {
-        TypeBadge(type: PokemonType(name: "fire", id: 10))
-        TypeBadge(type: PokemonType(name: "water", id: 11))
+        TypeBadge(type: .fire)
+        TypeBadge(type: .water)
     }
     .padding()
     .background(.black)
     .environment(\.colorScheme, .dark)
     
     VStack(spacing: 16) {
-        TypeBadge(type: PokemonType(name: "fire", id: 10))
-        TypeBadge(type: PokemonType(name: "water", id: 11))
+        TypeBadge(type: .fire)
+        TypeBadge(type: .water)
     }
     .padding()
     .background(.white)
