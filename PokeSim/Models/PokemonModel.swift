@@ -157,6 +157,58 @@ struct CSVPokemonStat: Codable {
     let effort: Int
 }
 
+struct CSVMove: Codable, Identifiable {
+    // id,identifier,generation_id,type_id,power,pp,accuracy,priority,target_id,damage_class_id,effect_id,effect_chance,contest_type_id,contest_effect_id,super_contest_effect_id
+    // 1,pound,1,1,40,35,100,0,10,2,1,,5,1,5
+    
+    let id: Int
+    let identifier: String
+    let generation_id: Int
+    let type: PokemonType
+    let power: Int?
+    let pp: Int?
+    let accuracy: Int?
+    let priority: Int
+    let target_id: Int
+    let damage_class_id: Int
+    let effect_id: Int?
+    let effect_chance: Int?
+    let contest_type_id: Int?
+    let contest_effect_id: Int?
+    let super_contest_effect_id: Int?
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case identifier
+        case generation_id
+        case type = "type_id"
+        case power
+        case pp
+        case accuracy
+        case priority
+        case target_id
+        case damage_class_id
+        case effect_id
+        case effect_chance
+        case contest_type_id
+        case contest_effect_id
+        case super_contest_effect_id
+    }
+}
+
+struct CSVPokemonMove: Codable {
+    // pokemon_id,version_group_id,move_id,pokemon_move_method_id,level,order,mastery
+    // 111,24,249,1,11,,20
+    
+    let pokemon_id: Int
+    let version_group_id: Int
+    let move_id: Int
+    let pokemon_move_method_id: Int
+    let level: Int
+    let order: Int?
+    let mastery: Int?
+}
+
 
 // MARK: - Extensions (helper functions)
 extension CSVPokemon {
@@ -233,6 +285,12 @@ extension CSVPokemon {
             speed:   statsByID[6] ?? 0
         )
     }
+    
+    func moves(from moves: [CSVPokemonMove]) -> [CSVPokemonMove] {
+        moves.filter {
+            $0.pokemon_id == self.id
+        }
+    }
 }
 
 extension CSVPokemonSpecies {
@@ -290,6 +348,15 @@ extension CSVPokemonForm {
             // language id 9 is english
             $0.local_language_id == 9 && $0.pokemon_form_id == self.id
         }
+    }
+}
+
+extension CSVPokemonMove {
+    func pokemon(from pokemon: [CSVPokemon]) -> CSVPokemon? {
+        pokemon.first { $0.id == self.pokemon_id }
+    }
+    func move(from moves: [CSVMove]) -> CSVMove? {
+        moves.first { $0.id == self.move_id }
     }
 }
 

@@ -22,6 +22,10 @@ struct PokemonPage: View {
     @State private var activeTab: PokemonTab = .about
     @State private var selectedVariant: CSVPokemon?
     
+    private var moves: [CSVPokemonMove] {
+        selectedVariant?.moves(from: csvReader.pokemonMoves) ?? []
+    }
+    
     private var selectedVariantName: String {
         selectedVariant?.id == variants.first?.id
         ? speciesName
@@ -68,6 +72,7 @@ struct PokemonPage: View {
         }
         .onAppear {
             selectedVariant = species.variants(from: csvReader.pokemonList).first
+            
         }
     }
     
@@ -212,6 +217,7 @@ struct PokemonPage: View {
     // MARK: - Moves Tab
     var movesTab: some View {
         VStack {
+            Text("\(moves.first!.move(from: csvReader.moves)!.identifier)")
             HStack {
                 Text("Level Name Type Cat Pow Acc PP")
                     .frame(width: .infinity)

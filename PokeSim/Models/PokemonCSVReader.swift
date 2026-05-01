@@ -13,6 +13,8 @@ class PokemonCSVReader {
     let pokemonAbilities = decodeCSV(CSVPokemonAbility.self, fromPath: "pokemon_abilities")
     let abilityNames = decodeCSV(CSVAbilityNames.self, fromPath: "ability_names")
     let pokemonStats = decodeCSV(CSVPokemonStat.self, fromPath: "pokemon_stats")
+    let moves = decodeCSV(CSVMove.self, fromPath: "moves")
+    let pokemonMoves = decodeCSV(CSVPokemonMove.self, fromPath: "pokemon_moves")
     
     private let pokemonByID: [Int: CSVPokemon]
     private let speciesByID: [Int: CSVPokemonSpecies]
