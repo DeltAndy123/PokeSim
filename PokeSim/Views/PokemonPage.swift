@@ -23,7 +23,8 @@ struct PokemonPage: View {
     @State private var selectedVariant: CSVPokemon?
     
     private var moves: [CSVPokemonMove] {
-        selectedVariant?.moves(from: csvReader.pokemonMoves) ?? []
+//        selectedVariant?.moves(from: csvReader.pokemonMoves) ?? []
+        []
     }
     
     private var selectedVariantName: String {

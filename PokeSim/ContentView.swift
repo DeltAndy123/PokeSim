@@ -11,7 +11,9 @@ struct ContentView: View {
             Tab("Teams", systemImage: "rectangle.on.rectangle.angled") {
                 TeamsView()
             }
-            
+            Tab("Battle", systemImage: "shield.lefthalf.filled"){
+                BattleView()
+            }
             Tab(role: .search) {
                 SearchView()
             }
