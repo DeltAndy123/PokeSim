@@ -218,9 +218,12 @@ struct TeamsView: View {
     }
     
     func dominantType(for team: PokemonTeam) -> PokemonType? {
-        let types = team.pokemonList.compactMap { $0.primaryType(from: PokemonCSVReader.shared.pokemonTypes) }
-        return Dictionary(grouping: types, by: \.name)
-            .max(by: { $0.value.count < $1.value.count })?.value.first
+        let types = team.pokemonList.flatMap {
+            PokemonDatabase.shared.types(forPokemonID: $0.id)
+        }
+        return Dictionary(grouping: types, by: \.type.id)
+            .max { $0.value.count < $1.value.count }?
+            .value.first?.type
     }
 }
 

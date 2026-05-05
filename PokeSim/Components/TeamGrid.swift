@@ -77,7 +77,7 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                     } else if team.pokemonList.count > index {
                         let pokemon = team.pokemonList[index]
                         if pokemonClickable {
-                            if let species = pokemon.species(from: PokemonCSVReader.shared.pokemonSpecies) {
+                            if let species = PokemonDatabase.shared.species(byID: pokemon.pokemon_species_id) {
                                 NavigationLink {
                                     PokemonPage(species: species)
                                 } label: {
@@ -102,12 +102,12 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
 }
 
 struct PokemonCircle<S: ShapeStyle>: View {
-    let pokemon: CSVPokemon
+    let pokemon: PokemonRecord
     let pokemonClickable: Bool
     let style: S
     
     private var primaryType: PokemonType? {
-        pokemon.primaryType(from: PokemonCSVReader.shared.pokemonTypes)
+        PokemonDatabase.shared.types(forPokemonID: pokemon.id).first?.type
     }
 
     var body: some View {

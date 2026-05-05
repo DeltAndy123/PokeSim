@@ -1,13 +1,13 @@
 {
-  "originHash" : "c604f116f0d07960b36c6e87a63704473e03dc35ff1f9a777a52d789f60ad6b4",
+  "originHash" : "2ea7a741b09863a45a5e1ae322276f6b2a5b16e280bf0c539dab62d43cf4d2c4",
   "pins" : [
     {
-      "identity" : "codablecsv",
+      "identity" : "grdb.swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/dehesa/CodableCSV",
+      "location" : "https://github.com/groue/GRDB.swift",
       "state" : {
-        "revision" : "99ace2cfdfbc19108b529c021005fb57a460e715",
-        "version" : "0.6.7"
+        "revision" : "36e30a6f1ef10e4194f6af0cff90888526f0c115",
+        "version" : "7.10.0"
       }
     },
     {

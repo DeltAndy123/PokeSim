@@ -5,9 +5,9 @@ struct SearchView: View {
     
     var body: some View {
         NavigationStack {
-            List(PokemonCSVReader.shared.searchSpecies(for: searchText)) { pokemon in
-                SearchResult(pokemon: pokemon) {
-                    PokemonPage(species: pokemon)
+            List(PokemonDatabase.shared.searchSpecies(for: searchText)) { species in
+                SearchResult(species: species) {
+                    PokemonPage(species: species)
                 }
             }
             .navigationTitle(Text("Search"))

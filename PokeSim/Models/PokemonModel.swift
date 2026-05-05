@@ -1,9 +1,332 @@
 import Foundation
+import GRDB
 import SwiftUI
 
-// TODO: Remove all old Codable models and rename these to replace them
 
-enum PokemonType: Int, Codable, Identifiable {
+struct PokemonRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemon" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "order" INTEGER, "height" INTEGER, "weight" INTEGER, "base_experience" INTEGER, "is_default" INTEGER NOT NULL, "pokemon_species_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemon"
+    
+    let id: Int
+    let name: String
+    let order: Int?
+    let height: Int
+    let weight: Int
+    let base_experience: Int?
+    let is_default: Bool
+    let pokemon_species_id: Int
+}
+
+struct PokemonSpeciesRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonspecies" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "order" INTEGER, "gender_rate" INTEGER, "capture_rate" INTEGER, "base_happiness" INTEGER, "is_baby" INTEGER NOT NULL, "hatch_counter" INTEGER, "has_gender_differences" INTEGER NOT NULL, "forms_switchable" INTEGER NOT NULL, "evolution_chain_id" INTEGER, "evolves_from_species_id" INTEGER, "generation_id" INTEGER, "growth_rate_id" INTEGER, "pokemon_color_id" INTEGER, "pokemon_habitat_id" INTEGER, "pokemon_shape_id" INTEGER, "is_legendary" INTEGER NOT NULL, "is_mythical" INTEGER NOT NULL);
+    
+    static let databaseTableName = "pokemon_v2_pokemonspecies"
+    
+    let id: Int
+    let name: String
+    let order: Int?
+    let gender_rate: Int?
+    let capture_rate: Int?
+    let base_happiness: Int?
+    let is_baby: Bool
+    let hatch_counter: Int?
+    let has_gender_differences: Bool
+    let forms_switchable: Bool
+    let evolution_chain_id: Int?
+    let evolves_from_species_id: Int?
+    let generation_id: Int?
+    let growth_rate_id: Int?
+    let pokemon_color_id: Int?
+    let pokemon_habitat_id: Int?
+    let pokemon_shape_id: Int?
+    let is_legendary: Bool
+    let is_mythical: Bool
+}
+
+struct PokemonFormRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonform" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "order" INTEGER, "form_name" TEXT NOT NULL, "is_default" INTEGER NOT NULL, "is_battle_only" INTEGER NOT NULL, "is_mega" INTEGER NOT NULL, "version_group_id" INTEGER, "pokemon_id" INTEGER, "form_order" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonform"
+    
+    let id: Int
+    let name: String
+    let order: Int?
+    let form_name: String
+    let is_default: Bool
+    let is_battle_only: Bool
+    let is_mega: Bool
+    let version_group_id: Int?
+    let pokemon_id: Int
+    let form_order: Int?
+}
+
+struct PokemonFormNameRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonformname" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "pokemon_name" TEXT NOT NULL, "language_id" INTEGER, "pokemon_form_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonformname"
+    
+    let id: Int
+    let name: String
+    let pokemon_name: String
+    let language_id: Int
+    let pokemon_form_id: Int
+}
+
+struct PokemonSpeciesNameRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonspeciesname" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "genus" TEXT NOT NULL, "language_id" INTEGER, "pokemon_species_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonspeciesname"
+    
+    let id: Int
+    let name: String
+    let genus: String
+    let language_id: Int
+    let pokemon_species_id: Int
+}
+
+struct PokemonTypeRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemontype" ("id" INTEGER NOT NULL, "slot" INTEGER NOT NULL, "pokemon_id" INTEGER, "type_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemontype"
+    
+    let id: Int
+    let slot: Int
+    let pokemon_id: Int
+    let type: PokemonType
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case slot
+        case pokemon_id
+        case type = "type_id"
+    }
+}
+
+struct PokemonAbilityRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonability" ("id" INTEGER NOT NULL, "is_hidden" INTEGER NOT NULL, "slot" INTEGER NOT NULL, "ability_id" INTEGER, "pokemon_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonability"
+    
+    let id: Int
+    let is_hidden: Bool
+    let slot: Int
+    let ability_id: Int
+    let pokemon_id: Int
+}
+
+struct AbilityNameRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_abilityname" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "ability_id" INTEGER, "language_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_abilityname"
+    
+    let id: Int
+    let name: String
+    let ability_id: Int
+    let language_id: Int
+}
+
+struct PokemonStatRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonstat" ("id" INTEGER NOT NULL, "base_stat" INTEGER NOT NULL, "effort" INTEGER NOT NULL, "pokemon_id" INTEGER, "stat_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonstat"
+    
+    let id: Int
+    let base_stat: Int
+    let effort: Int
+    let pokemon_id: Int
+    let stat_id: Int
+}
+
+struct MoveRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_move" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "power" INTEGER, "pp" INTEGER, "accuracy" INTEGER, "priority" INTEGER, "move_effect_chance" INTEGER, "generation_id" INTEGER, "move_damage_class_id" INTEGER, "move_effect_id" INTEGER, "move_target_id" INTEGER, "type_id" INTEGER, "contest_effect_id" INTEGER, "contest_type_id" INTEGER, "super_contest_effect_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_move"
+    
+    let id: Int
+    let name: String
+    let power: Int?
+    let pp: Int?
+    let accuracy: Int?
+    let priority: Int
+    let move_effect_chance: Int?
+    let generation_id: Int
+    let move_damage_class_id: Int
+    let move_effect_id: Int?
+    let move_target_id: Int
+    let type: PokemonType
+    let contest_effect_id: Int?
+    let contest_type_id: Int?
+    let super_contest_effect_id: Int?
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case power
+        case pp
+        case accuracy
+        case priority
+        case move_effect_chance
+        case generation_id
+        case move_damage_class_id
+        case move_effect_id
+        case move_target_id
+        case type = "type_id"
+        case contest_effect_id
+        case contest_type_id
+        case super_contest_effect_id
+    }
+}
+
+struct PokemonMoveRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_pokemonmove" ("id" INTEGER NOT NULL, "order" INTEGER, "level" INTEGER NOT NULL, "move_id" INTEGER, "pokemon_id" INTEGER, "version_group_id" INTEGER, "move_learn_method_id" INTEGER, "mastery" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_pokemonmove"
+    
+    let id: Int
+    let order: Int?
+    let level: Int
+    let move_id: Int
+    let pokemon_id: Int
+    let version_group_id: Int
+    let move_learn_method_id: Int
+    let mastery: Int?
+}
+
+
+// MARK: - Extensions (helper functions)
+extension PokemonRecord {
+    var spriteArtworkUrl: URL? {
+        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(self.id).png")
+    }
+    var spritePixelatedUrl: URL? {
+        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(self.id).png")
+    }
+    
+    var formattedHeight: String { String(format: "%.1f m", Double(self.height) / 10) }
+    var formattedWeight: String { String(format: "%.1f kg", Double(self.weight) / 10) }
+}
+
+extension PokemonSpeciesRecord {
+    var formattedID: String {
+        String(format: "#%04d", self.id)
+    }
+    
+    var spriteArtworkUrl: URL? {
+        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(self.id).png")
+    }
+    var spritePixelatedUrl: URL? {
+        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(self.id).png")
+    }
+}
+
+// MARK: - SQL Columns
+extension PokemonRecord {
+    enum Columns {
+        static let id = Column("id")
+        static let name = Column("name")
+        static let order = Column("order")
+        static let pokemonSpeciesID = Column("pokemon_species_id")
+    }
+}
+
+extension PokemonSpeciesRecord {
+    enum Columns {
+        static let id = Column("id")
+        static let name = Column("name")
+        static let order = Column("order")
+    }
+}
+
+extension PokemonFormRecord {
+    enum Columns {
+        static let id = Column("id")
+        static let pokemonID = Column("pokemon_id")
+        static let name = Column("name")
+        static let order = Column("order")
+    }
+}
+
+extension PokemonSpeciesNameRecord {
+    enum Columns {
+        static let speciesID = Column("pokemon_species_id")
+        static let languageID = Column("language_id")
+    }
+}
+
+extension PokemonFormNameRecord {
+    enum Columns {
+        static let formID = Column("pokemon_form_id")
+        static let languageID = Column("language_id")
+    }
+}
+
+extension PokemonAbilityRecord {
+    enum Columns {
+        static let pokemonID = Column("pokemon_id")
+        static let isHidden = Column("is_hidden")
+        static let slot = Column("slot")
+    }
+}
+
+extension PokemonTypeRecord {
+    enum Columns {
+        static let pokemonID = Column("pokemon_id")
+        static let slot = Column("slot")
+    }
+}
+
+extension AbilityNameRecord {
+    enum Columns {
+        static let abilityID = Column("ability_id")
+        static let languageID = Column("language_id")
+    }
+}
+
+extension PokemonStatRecord {
+    enum Columns {
+        static let pokemonID = Column("pokemon_id")
+        static let statID = Column("stat_id")
+    }
+}
+
+extension PokemonMoveRecord {
+    enum Columns {
+        static let order = Column("order")
+        static let level = Column("level")
+        static let moveID = Column("move_id")
+        static let pokemonID = Column("pokemon_id")
+        static let versionGroupID = Column("version_group_id")
+        static let learnMethodID = Column("move_learn_method_id")
+    }
+}
+
+// MARK: - Joins
+extension PokemonMoveRecord {
+    static let move = belongsTo(
+        MoveRecord.self,
+        key: "move",
+        using: ForeignKey(["move_id"])
+    )
+}
+
+extension MoveRecord {
+    static let pokemonMoves = hasMany(
+        PokemonMoveRecord.self,
+        key: "pokemonMoves",
+        using: ForeignKey(["move_id"])
+    )
+}
+
+struct PokemonMoveDetail: Decodable, FetchableRecord {
+    let pokemonMove: PokemonMoveRecord
+    let move: MoveRecord
+}
+
+
+// MARK: - Types
+
+enum PokemonType: Int, Decodable, Identifiable {
     var id: Int { rawValue }
     var name: String {
         String(describing: self)
@@ -32,332 +355,6 @@ enum PokemonType: Int, Codable, Identifiable {
     case stellar = 19
     case unknown = 10001
     case shadow = 10002
-}
-
-struct CSVPokemon: Codable, Identifiable {
-    // id,identifier,species_id,height,weight,base_experience,order,is_default
-    // 1,bulbasaur,1,7,69,64,1,1
-    
-    let id: Int
-    let identifier: String
-    let species_id: Int
-    let height: Int
-    let weight: Int
-    let base_experience: Int?
-    let order: Int?
-    let is_default: Bool
-}
-
-struct CSVPokemonSpecies: Codable, Identifiable {
-    // id,identifier,generation_id,evolves_from_species_id,evolution_chain_id,color_id,shape_id,habitat_id,gender_rate,capture_rate,base_happiness,is_baby,hatch_counter,has_gender_differences,growth_rate_id,forms_switchable,is_legendary,is_mythical,order,conquest_order
-    // 1,bulbasaur,1,,1,5,8,3,1,45,70,0,20,0,4,0,0,0,1,
-    // 2,ivysaur,1,1,1,5,8,3,1,45,70,0,20,0,4,0,0,0,2,
-    
-    let id: Int
-    let identifier: String
-    let generation_id: Int
-    let evolves_from_species_id: Int?
-    let evolution_chain_id: Int
-    let color_id: Int
-    let shape_id: Int
-    let habitat_id: Int?
-    let gender_rate: Int
-    let capture_rate: Int
-    let base_happiness: Int
-    let is_baby: Bool
-    let hatch_counter: Int
-    let has_gender_differences: Bool
-    let growth_rate_id: Int
-    let forms_switchable: Bool
-    let is_legendary: Bool
-    let is_mythical: Bool
-    let order: Int
-    let conquest_order: Int?
-}
-
-struct CSVPokemonForm: Codable, Identifiable {
-    // id,identifier,form_identifier,pokemon_id,introduced_in_version_group_id,is_default,is_battle_only,is_mega,form_order,order
-    // 1,bulbasaur,,1,28,1,0,0,1,1
-    // 641,tornadus-incarnate,incarnate,641,11,1,0,0,1,847
-    
-    let id: Int
-    let identifier: String
-    let form_identifier: String
-    let pokemon_id: Int
-    let introduced_in_version_group_id: Int
-    let is_default: Bool
-    let is_battle_only: Bool
-    let is_mega: Bool
-    let form_order: Int
-    let order: Int
-}
-
-struct CSVPokemonFormName: Codable {
-    // pokemon_form_id,local_language_id,form_name,pokemon_name
-    // 201,9,A,Unown A
-    
-    let pokemon_form_id: Int
-    let local_language_id: Int
-    let form_name: String
-    let pokemon_name: String
-}
-
-struct CSVPokemonSpeciesName: Codable {
-    // pokemon_species_id,local_language_id,name,genus
-    // 1,9,Bulbasaur,Seed Pokémon
-    // 1,2,Fushigidane,
-    
-    let pokemon_species_id: Int
-    let local_language_id: Int
-    let name: String
-    let genus: String?
-}
-
-struct CSVPokemonType: Codable {
-    // pokemon_id,type_id,slot
-    // 1,12,1
-    
-    let pokemon_id: Int
-    let type: PokemonType
-    let slot: Int
-
-    enum CodingKeys: String, CodingKey {
-        case pokemon_id
-        case type = "type_id"
-        case slot
-    }
-}
-
-struct CSVPokemonAbility: Codable {
-    // pokemon_id,ability_id,is_hidden,slot
-    // 1,65,0,1
-    
-    let pokemon_id: Int
-    let ability_id: Int
-    let is_hidden: Bool
-    let slot: Int?
-}
-
-struct CSVAbilityNames: Codable {
-    // ability_id,local_language_id,name
-    // 1,9,Stench
-    
-    let ability_id: Int
-    let local_language_id: Int
-    let name: String
-}
-
-struct CSVPokemonStat: Codable {
-    // pokemon_id,stat_id,base_stat,effort
-    // 1,1,45,0
-    
-    let pokemon_id: Int
-    let stat_id: Int
-    let base_stat: Int
-    let effort: Int
-}
-
-struct CSVMove: Codable, Identifiable {
-    // id,identifier,generation_id,type_id,power,pp,accuracy,priority,target_id,damage_class_id,effect_id,effect_chance,contest_type_id,contest_effect_id,super_contest_effect_id
-    // 1,pound,1,1,40,35,100,0,10,2,1,,5,1,5
-    
-    let id: Int
-    let identifier: String
-    let generation_id: Int
-    let type: PokemonType
-    let power: Int?
-    let pp: Int?
-    let accuracy: Int?
-    let priority: Int
-    let target_id: Int
-    let damage_class_id: Int
-    let effect_id: Int?
-    let effect_chance: Int?
-    let contest_type_id: Int?
-    let contest_effect_id: Int?
-    let super_contest_effect_id: Int?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case identifier
-        case generation_id
-        case type = "type_id"
-        case power
-        case pp
-        case accuracy
-        case priority
-        case target_id
-        case damage_class_id
-        case effect_id
-        case effect_chance
-        case contest_type_id
-        case contest_effect_id
-        case super_contest_effect_id
-    }
-}
-
-struct CSVPokemonMove: Codable {
-    // pokemon_id,version_group_id,move_id,pokemon_move_method_id,level,order,mastery
-    // 111,24,249,1,11,,20
-    
-    let pokemon_id: Int
-    let version_group_id: Int
-    let move_id: Int
-    let pokemon_move_method_id: Int
-    let level: Int
-    let order: Int?
-    let mastery: Int?
-}
-
-
-// MARK: - Extensions (helper functions)
-extension CSVPokemon {
-    var spriteArtworkUrl: URL? {
-        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(self.id).png")
-    }
-    var spritePixelatedUrl: URL? {
-        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(self.id).png")
-    }
-    
-    var formattedHeight: String { String(format: "%.1f m", Double(self.height) / 10) }
-    var formattedWeight: String { String(format: "%.1f kg", Double(self.weight) / 10) }
-    
-    func types(from types: [CSVPokemonType]) -> [CSVPokemonType] {
-        types.filter {
-            $0.pokemon_id == self.id
-        }
-    }
-    func primaryType(from typesList: [CSVPokemonType]) -> PokemonType? {
-        types(from: typesList).first { $0.slot == 1 }?.type
-    }
-    func secondaryType(from typesList: [CSVPokemonType]) -> PokemonType? {
-        types(from: typesList).first { $0.slot == 2 }?.type
-    }
-    
-    func abilities(from abilities: [CSVPokemonAbility]) -> [CSVPokemonAbility] {
-        abilities.filter {
-            $0.pokemon_id == self.id
-        }
-    }
-    func regularAbilities(from abilities: [CSVPokemonAbility]) -> [CSVPokemonAbility] {
-        self.abilities(from: abilities).filter { !$0.is_hidden }
-    }
-    func hiddenAbility(from abilities: [CSVPokemonAbility]) -> CSVPokemonAbility? {
-        self.abilities(from: abilities).first { $0.is_hidden }
-    }
-    
-    func species(from species: [CSVPokemonSpecies]) -> CSVPokemonSpecies? {
-        species.first {
-            $0.id == self.species_id
-        }
-    }
-    
-    func forms(from forms: [CSVPokemonForm]) -> [CSVPokemonForm] {
-        forms.filter {
-            $0.pokemon_id == self.id
-        }
-    }
-    
-    
-    struct Stats {
-        let hp: Int
-        let attack: Int
-        let defense: Int
-        let spAtk: Int
-        let spDef: Int
-        let speed: Int
-
-        var total: Int { hp + attack + defense + spAtk + spDef + speed }
-    }
-    func stats(from statsList: [CSVPokemonStat]) -> Stats {
-        let statsByID = Dictionary(
-            uniqueKeysWithValues: statsList
-                .filter { $0.pokemon_id == self.id }
-                .map { ($0.stat_id, $0.base_stat) }
-        )
-
-        return Stats(
-            hp:      statsByID[1] ?? 0,
-            attack:  statsByID[2] ?? 0,
-            defense: statsByID[3] ?? 0,
-            spAtk:   statsByID[4] ?? 0,
-            spDef:   statsByID[5] ?? 0,
-            speed:   statsByID[6] ?? 0
-        )
-    }
-    
-    func moves(from moves: [CSVPokemonMove]) -> [CSVPokemonMove] {
-        moves.filter {
-            $0.pokemon_id == self.id
-        }
-    }
-}
-
-extension CSVPokemonSpecies {
-    func variants(from pokemon: [CSVPokemon]) -> [CSVPokemon] {
-        pokemon.filter { $0.species_id == self.id }
-    }
-    
-    var formattedID: String {
-        String(format: "#%04d", self.id)
-    }
-    
-    var spriteArtworkUrl: URL? {
-        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(self.id).png")
-    }
-    var spritePixelatedUrl: URL? {
-        URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(self.id).png")
-    }
-    
-    func speciesEnglishName(from names: [CSVPokemonSpeciesName]) -> String? {
-        return names.first {
-            // language id 9 is english
-            $0.local_language_id == 9 && self.id == $0.pokemon_species_id
-        }?.name
-    }
-    func speciesAllNames(from names: [CSVPokemonSpeciesName]) -> [String] {
-        return names.compactMap {
-            self.id == $0.pokemon_species_id ? $0.name : nil
-        }
-    }
-    
-    func speciesEnglishGenus(from names: [CSVPokemonSpeciesName]) -> String? {
-        return names.first {
-            // language id 9 is english
-            $0.local_language_id == 9 && self.id == $0.pokemon_species_id
-        }?.genus
-    }
-}
-
-extension CSVPokemonAbility {
-    func englishName(from names: [CSVAbilityNames]) -> String? {
-        return names.first {
-            // language id 9 is english
-            $0.local_language_id == 9 && self.ability_id == $0.ability_id
-        }?.name
-    }
-}
-
-extension CSVPokemonForm {
-    func variant(from pokemon: [CSVPokemon]) -> CSVPokemon? {
-        pokemon.first { $0.id == self.pokemon_id }
-    }
-    
-    func englishName(from names: [CSVPokemonFormName]) -> CSVPokemonFormName? {
-        return names.first {
-            // language id 9 is english
-            $0.local_language_id == 9 && $0.pokemon_form_id == self.id
-        }
-    }
-}
-
-extension CSVPokemonMove {
-    func pokemon(from pokemon: [CSVPokemon]) -> CSVPokemon? {
-        pokemon.first { $0.id == self.pokemon_id }
-    }
-    func move(from moves: [CSVMove]) -> CSVMove? {
-        moves.first { $0.id == self.move_id }
-    }
 }
 
 extension PokemonType {

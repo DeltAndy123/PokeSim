@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C055B5E22FA1380C00A1D59B /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = C055B5E12FA1380C00A1D59B /* Flow */; };
-		C0BF29472FA40C3500AA9E77 /* CodableCSV in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF29462FA40C3500AA9E77 /* CodableCSV */; };
+		C0FB86012FA93E3400569FC2 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = C0FB86002FA93E3400569FC2 /* GRDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0BF29472FA40C3500AA9E77 /* CodableCSV in Frameworks */,
+				C0FB86012FA93E3400569FC2 /* GRDB in Frameworks */,
 				C055B5E22FA1380C00A1D59B /* Flow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -73,7 +73,7 @@
 			name = PokeSim;
 			packageProductDependencies = (
 				C055B5E12FA1380C00A1D59B /* Flow */,
-				C0BF29462FA40C3500AA9E77 /* CodableCSV */,
+				C0FB86002FA93E3400569FC2 /* GRDB */,
 			);
 			productName = PokeSim;
 			productReference = C055B5AB2FA1379D00A1D59B /* PokeSim.app */;
@@ -105,7 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
-				C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */,
+				C0FB85FF2FA93E3400569FC2 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C055B5AC2FA1379D00A1D59B /* Products */;
@@ -359,12 +359,12 @@
 				minimumVersion = 3.1.1;
 			};
 		};
-		C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */ = {
+		C0FB85FF2FA93E3400569FC2 /* XCRemoteSwiftPackageReference "GRDB" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/dehesa/CodableCSV";
+			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.6.7;
+				minimumVersion = 7.10.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -375,10 +375,10 @@
 			package = C055B5E02FA1380C00A1D59B /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
 			productName = Flow;
 		};
-		C0BF29462FA40C3500AA9E77 /* CodableCSV */ = {
+		C0FB86002FA93E3400569FC2 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0BF29452FA40C3500AA9E77 /* XCRemoteSwiftPackageReference "CodableCSV" */;
-			productName = CodableCSV;
+			package = C0FB85FF2FA93E3400569FC2 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

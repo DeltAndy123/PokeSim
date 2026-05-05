@@ -8,36 +8,43 @@ enum PokemonTab {
 struct PokemonPage: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    private let csvReader = PokemonCSVReader.shared
+    private let db = PokemonDatabase.shared
     
-    let species: CSVPokemonSpecies
+    let species: PokemonSpeciesRecord
     private var speciesName: String {
-        species.speciesEnglishName(from: csvReader.pokemonSpeciesNames) ?? "MISSINGNO"
+        db.englishSpeciesName(forSpeciesID: species.id)?.name ?? "MISSINGNO"
     }
-    private var variants: [CSVPokemon] { species.variants(from: csvReader.pokemonList) }
+    private var variants: [PokemonRecord] {
+        db.pokemon(forSpeciesID: species.id)
+    }
     private var genus: String {
-        species.speciesEnglishGenus(from: csvReader.pokemonSpeciesNames) ?? "UNKNOWN"
+        db.englishSpeciesName(forSpeciesID: species.id)?.genus ?? "UNKNOWN"
     }
     
     @State private var activeTab: PokemonTab = .about
-    @State private var selectedVariant: CSVPokemon?
+    @State private var selectedVariant: PokemonRecord?
     
-    private var moves: [CSVPokemonMove] {
-//        selectedVariant?.moves(from: csvReader.pokemonMoves) ?? []
-        []
+    private var variantTypes: [PokemonTypeRecord] {
+        guard let selectedVariant else { return [] }
+        return db.types(forPokemonID: selectedVariant.id)
+    }
+    
+    private var moves: [PokemonMoveDetail] {
+        guard let selectedVariant else { return [] }
+        return db.moveDetails(forPokemonID: selectedVariant.id, versionGroupID: 1)
     }
     
     private var selectedVariantName: String {
-        selectedVariant?.id == variants.first?.id
-        ? speciesName
-        : selectedVariant?.forms(from: csvReader.pokemonForms).first?
-            .englishName(from: csvReader.pokemonFormNames)?.pokemon_name
+        guard let selectedVariant else { return speciesName }
+        guard let form = db.forms(forPokemonID: selectedVariant.id).first else { return speciesName }
+        return selectedVariant.id == variants.first?.id ? speciesName
+        : db.englishFormName(forFormID: form.id)?.pokemon_name
         ?? speciesName
     }
     
-    private func labelAccent(for form: CSVPokemon) -> Color {
-        form.primaryType(from: csvReader.pokemonTypes)?
-            .colors.labelAccent(for: colorScheme) ?? .secondary
+    private func labelAccent(for pokemon: PokemonRecord) -> Color {
+        db.types(forPokemonID: pokemon.id)
+            .first?.type.colors.labelAccent(for: colorScheme) ?? .secondary
     }
     
     var body: some View {
@@ -72,8 +79,7 @@ struct PokemonPage: View {
             .padding(.bottom, 16)
         }
         .onAppear {
-            selectedVariant = species.variants(from: csvReader.pokemonList).first
-            
+            selectedVariant = variants.first { $0.is_default } ?? variants.first
         }
     }
     
@@ -83,14 +89,15 @@ struct PokemonPage: View {
             Text(selectedVariantName)
                 .font(.largeTitle)
                 .fontWeight(.bold)
+                .multilineTextAlignment(.center)
             Text("\(species.formattedID) • \(genus)")
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
-            if let form = selectedVariant {
+            if let variant = selectedVariant {
                 HStack {
-                    ForEach(form.types(from: csvReader.pokemonTypes), id: \.slot) { type in
+                    ForEach(variantTypes) { type in
                         TypeBadge(type: type.type)
                     }
                 }
@@ -98,18 +105,16 @@ struct PokemonPage: View {
                 ZStack {
                     RadialGradient(
                         colors: [
-                            form.primaryType(from: csvReader.pokemonTypes)?.colors.bg.opacity(0.3) ?? .clear,
+                            variantTypes.first?.type.colors.bg.opacity(0.3) ?? .clear,
                             .clear
                         ],
                         center: .center,
                         startRadius: 20,
                         endRadius: 150
                     )
-                    if let form = selectedVariant ?? variants.first {
-                        PokemonImage(for: form)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 200)
-                    }
+                    PokemonImage(for: variant)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 250)
@@ -122,49 +127,49 @@ struct PokemonPage: View {
     // MARK: - About Tab
     var aboutTab: some View {
         VStack(spacing: 16) {
-            if let form = selectedVariant {
-                let accent = labelAccent(for: form)
+            if let variant = selectedVariant {
+                let accent = labelAccent(for: variant)
                 let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
                 LazyVGrid(columns: columns, spacing: 12) {
-                    InfoCard(label: "Height", labelStyle: accent, value: form.formattedHeight)
-                    InfoCard(label: "Weight", labelStyle: accent, value: form.formattedWeight)
+                    InfoCard(label: "Height", labelStyle: accent, value: variant.formattedHeight)
+                    InfoCard(label: "Weight", labelStyle: accent, value: variant.formattedWeight)
                     InfoCard(label: "Category", labelStyle: accent, value: genus)
-                    if let exp = form.base_experience {
+                    if let exp = variant.base_experience {
                         InfoCard(label: "Base EXP", labelStyle: accent, value: "\(exp)")
                     }
                 }
                 
-                abilitiesSection(form: form)
+                abilitiesSection(variant: variant)
             }
         }
     }
-    func abilitiesSection(form: CSVPokemon) -> some View {
+    func abilitiesSection(variant: PokemonRecord) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Abilities")
                 .font(.caption)
                 .fontWeight(.bold)
                 .textCase(.uppercase)
-                .foregroundStyle(labelAccent(for: form))
+                .foregroundStyle(labelAccent(for: variant))
             
             HFlow {
-                ForEach(form.regularAbilities(from: csvReader.pokemonAbilities), id: \.ability_id) { (ability: CSVPokemonAbility) in
-                    Text(ability.englishName(from: csvReader.abilityNames) ?? "Ability #\(ability.ability_id)")
+                ForEach(db.normalAbilities(forPokemonID: variant.id)) { ability in
+                    Text(db.englishAbilityName(forAbilityID: ability.ability_id)?.name ?? "Unknown Ability #\(ability.ability_id)")
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
                 }
                 
-                if let hiddenAbility = form.hiddenAbility(from: csvReader.pokemonAbilities) {
+                ForEach(db.hiddenAbilities(forPokemonID: variant.id)) { hiddenAbility in
                     HStack {
-                        Text(hiddenAbility.englishName(from: csvReader.abilityNames) ?? "Ability #\(hiddenAbility.ability_id)")
+                        Text(db.englishAbilityName(forAbilityID: hiddenAbility.ability_id)?.name ?? "Unknown Ability #\(hiddenAbility.ability_id)")
                         Text("HIDDEN")
                             .font(Font.caption)
                             .fontWeight(.heavy)
-                            .foregroundStyle(labelAccent(for: form).opacity(0.75))
+                            .foregroundStyle(labelAccent(for: variant).opacity(0.75))
                             .padding(.vertical, 2)
                             .padding(.horizontal, 8)
-                            .background(form.primaryType(from: csvReader.pokemonTypes)?.colors.dim ?? Color.secondary, in: Capsule())
+                            .background(db.types(forPokemonID: variant.id).first?.type.colors.dim ?? .secondary, in: Capsule())
                     }
                     .fixedSize()
                     .padding(.horizontal, 14)
@@ -172,7 +177,7 @@ struct PokemonPage: View {
                     .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(labelAccent(for: form), style: StrokeStyle(dash: [5]))
+                            .stroke(labelAccent(for: variant), style: StrokeStyle(dash: [5]))
                     )
                 }
             }
@@ -184,9 +189,9 @@ struct PokemonPage: View {
     // MARK: - Stats Tab
     var statsTab: some View {
         VStack {
-            if let form = selectedVariant {
-                let accent = labelAccent(for: form)
-                let stats = form.stats(from: csvReader.pokemonStats)
+            if let variant = selectedVariant {
+                let accent = labelAccent(for: variant)
+                let stats = db.stats(forPokemonID: variant.id)
                 
                 StatRow(stat: "HP", value: stats.hp, color: .green, accent: accent)
                 StatRow(stat: "ATK", value: stats.attack, color: .yellow, accent: accent)
@@ -217,15 +222,11 @@ struct PokemonPage: View {
     
     // MARK: - Moves Tab
     var movesTab: some View {
-        VStack {
-            Text("\(moves.first!.move(from: csvReader.moves)!.identifier)")
-            HStack {
-                Text("Level Name Type Cat Pow Acc PP")
-                    .frame(width: .infinity)
-                    .background(.gray)
-            }
-            ScrollView(.vertical) {
-                
+        ScrollView {
+            LazyVStack {
+                ForEach(moves, id: \.pokemonMove.id) { move in
+                    Text(move.move.name)
+                }
             }
         }
     }
@@ -307,12 +308,33 @@ struct StatRow: View {
 }
 
 struct FormCard: View {
-    private let csvReader = PokemonCSVReader.shared
+    private let db = PokemonDatabase.shared
     
-    let variant: CSVPokemon
+    let variant: PokemonRecord
     let speciesName: String
     let isSelected: Bool
     let accent: Color
+    
+    private var firstForm: PokemonFormRecord? {
+        db.forms(forPokemonID: variant.id).first
+    }
+    private var formName: String {
+        guard let firstForm else { return speciesName }
+        return db.englishFormName(forFormID: firstForm.id)?.name ?? speciesName
+    }
+    
+    private var primaryType: PokemonType? {
+        db.types(forPokemonID: variant.id).first?.type
+    }
+    
+    private var selectedBackground: Color {
+        guard isSelected else { return .clear }
+        return primaryType?.colors.dim ?? .clear
+    }
+    private var selectedBorder: Color {
+        guard isSelected else { return .clear }
+        return primaryType?.colors.bg ?? .clear
+    }
     
     var body: some View {
         VStack {
@@ -320,30 +342,21 @@ struct FormCard: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
 
-            let name = variant.forms(from: csvReader.pokemonForms).first?
-                .englishName(from: csvReader.pokemonFormNames)?.form_name ?? speciesName
-
-            Text(name)
+            Text(formName)
                 .font(.headline)
 
             HStack {
-                let types = variant.types(from: csvReader.pokemonTypes)
-                ForEach(types, id: \.slot) { type in
+                let types = db.types(forPokemonID: variant.id)
+                ForEach(types) { type in
                     TypeBadge(type: type.type)
                 }
             }
         }
         .frame(alignment: .leading)
         .padding(12)
-        .background(
-            (isSelected ? variant.primaryType(from: csvReader.pokemonTypes)?.colors.dim : nil) ?? .clear,
-            in: RoundedRectangle(cornerRadius: 16)
-        )
+        .background(selectedBackground, in: RoundedRectangle(cornerRadius: 16))
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(isSelected ? variant.primaryType(from: csvReader.pokemonTypes)?.colors.bg ?? .clear : .clear, lineWidth: 2)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(selectedBorder, lineWidth: 2))
     }
 }
 
@@ -356,6 +369,6 @@ struct MoveCard: View {
 
 #Preview {
     NavigationStack {
-        PokemonPage(species: PokemonCSVReader().species(byId: 6)!)
+        PokemonPage(species: PokemonDatabase.shared.species(byID: 6)!)
     }
 }

@@ -19,7 +19,7 @@ struct ContentView: View {
             }
         }
         .task {
-//            PokemonCSVReader()
+//            print(PokemonDatabase.shared.pokemon(byID: 10))
         }
     }
 }

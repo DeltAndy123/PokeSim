@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    private let csvReader = PokemonCSVReader.shared
+    private let db = PokemonDatabase.shared
     
     @Query(sort: \PokemonTeam.sortIndex) private var teams: [PokemonTeam]
     @Environment(\.modelContext) private var modelContext
@@ -22,9 +22,12 @@ struct HomeView: View {
     
     private var dominantType: PokemonType? {
         guard let team else { return nil }
-        let types = team.pokemonList.compactMap { $0.primaryType(from: csvReader.pokemonTypes) }
-        return Dictionary(grouping: types, by: \.id)
-            .max(by: { $0.value.count < $1.value.count })?.value.first
+        let types = team.pokemonList.flatMap {
+            db.types(forPokemonID: $0.id)
+        }
+        return Dictionary(grouping: types, by: \.type.id)
+            .max { $0.value.count < $1.value.count }?
+            .value.first?.type
     }
     private var textAccent: Color {
         dominantType?.colors.labelAccent(for: colorScheme) ?? .secondary
@@ -147,8 +150,9 @@ struct HomeView: View {
     }
     
     func miniTeamCard(_ team: PokemonTeam) -> some View {
-        let teamAccent = team.pokemonList.compactMap { $0.primaryType(from: csvReader.pokemonTypes) }
-            .first?.colors.bg ?? .secondary
+        let teamAccent = team.pokemonList.compactMap {
+            db.types(forPokemonID: $0.id).first
+        }.first?.type.colors.bg ?? .secondary
         
         return VStack(alignment: .leading, spacing: 4) {
             Text(team.name)

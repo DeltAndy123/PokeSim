@@ -4,11 +4,11 @@ struct PokemonImage: View {
     let pixelated: Bool = false
     let spriteUrl: URL?
     
-    init(for pokemon: CSVPokemon) {
+    init (for pokemon: PokemonRecord) {
         spriteUrl = pokemon.spriteArtworkUrl
     }
     
-    init(forSpecies species: CSVPokemonSpecies) {
+    init(forSpecies species: PokemonSpeciesRecord) {
         spriteUrl = species.spriteArtworkUrl
     }
     

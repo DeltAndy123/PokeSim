@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct SearchResult<D: View>: View {
-    let pokemon: CSVPokemonSpecies
+    let species: PokemonSpeciesRecord
     let destination: D
-    private let csvReader = PokemonCSVReader.shared
+    private let db = PokemonDatabase.shared
     
-    init(pokemon: CSVPokemonSpecies, @ViewBuilder destination: () -> D) {
-        self.pokemon = pokemon
+    init(species: PokemonSpeciesRecord, @ViewBuilder destination: () -> D) {
+        self.species = species
         self.destination = destination()
     }
     
@@ -16,19 +16,20 @@ struct SearchResult<D: View>: View {
         } label: {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(pokemon.speciesEnglishName(from: csvReader.pokemonSpeciesNames) ?? "MISSINGNO")
+                    Text(db.englishSpeciesName(forSpeciesID: species.id)?.name ?? "MISSINGNO")
                         .fontWeight(.medium)
                     HStack {
-                        let variant = pokemon.variants(from: csvReader.pokemonList).first
-                        let types = variant?.types(from: csvReader.pokemonTypes) ?? []
-                        ForEach(types, id: \.slot) { type in
-                            TypeBadge(type: type.type)
+                        if let pokemon = db.pokemon(forSpeciesID: species.id).first {
+                            let types = db.types(forPokemonID: pokemon.id)
+                            ForEach(types, id: \.slot) { type in
+                                TypeBadge(type: type.type)
+                            }
                         }
                     }
                     .padding(.top, -6)
                 }
                 Spacer()
-                PokemonImage(forSpecies: pokemon)
+                PokemonImage(forSpecies: species)
                     .frame(width: 48, height: 48)
             }
         }

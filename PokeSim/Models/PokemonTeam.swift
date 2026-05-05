@@ -9,9 +9,9 @@ class PokemonTeam {
     var sortIndex: Int
     var pokemonIDs: [Int]
     
-    var pokemonList: [CSVPokemon] {
+    var pokemonList: [PokemonRecord] {
         pokemonIDs.compactMap { id in
-            PokemonCSVReader.shared.pokemon(byId: id)
+            PokemonDatabase.shared.pokemon(byID: id)
         }
     }
     

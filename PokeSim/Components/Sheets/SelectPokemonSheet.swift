@@ -6,22 +6,22 @@ struct SelectPokemonSheet: View {
     let team: PokemonTeam
     let pokemonIndex: Int
 
-    private let csvReader = PokemonCSVReader.shared
+    private let db = PokemonDatabase.shared
 
     @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
-            List(csvReader.searchSpecies(for: searchText)) { pokemon in
-                SearchResult(pokemon: pokemon) {
-                    PokemonPage(species: pokemon)
+            List(db.searchSpecies(for: searchText)) { species in
+                SearchResult(species: species) {
+                    PokemonPage(species: species)
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
                                 Button("Done", systemImage: "checkmark") {
                                     if pokemonIndex >= team.pokemonIDs.count {
-                                        team.pokemonIDs.append(pokemon.id)
+                                        team.pokemonIDs.append(species.id)
                                     } else {
-                                        team.pokemonIDs[pokemonIndex] = pokemon.id
+                                        team.pokemonIDs[pokemonIndex] = species.id
                                     }
                                     dismiss()
                                 }

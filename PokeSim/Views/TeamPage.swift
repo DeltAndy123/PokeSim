@@ -13,24 +13,24 @@ struct TeamPage: View {
     var body: some View {
         ScrollView {
             VStack {
-//                TeamGrid(
-//                    team: team,
-//                    pokemonCircleStyle: .background,
-//                    teamNameHidden: true
-//                ) { index in
-//                    selectedSlot = PokemonSlot(id: index)
-//                } onReorder: { from, to in
-//                    team.pokemonIDs.move(
-//                        fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to
-//                    )
-//                } pokemonContextMenu: { index in
-//                    Button("Remove", systemImage: "trash", role: .destructive) {
-//                        team.pokemonIDs.remove(at: index)
-//                    }
-//                }
-//                .padding(.vertical, 24)
-//                .background(.background.secondary, in: RoundedRectangle(cornerRadius: 24))
-//                .padding(.horizontal, 24)
+                TeamGrid(
+                    team: team,
+                    pokemonCircleStyle: .background,
+                    teamNameHidden: true
+                ) { index in
+                    selectedSlot = PokemonSlot(id: index)
+                } onReorder: { from, to in
+                    team.pokemonIDs.move(
+                        fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to
+                    )
+                } pokemonContextMenu: { index in
+                    Button("Remove", systemImage: "trash", role: .destructive) {
+                        team.pokemonIDs.remove(at: index)
+                    }
+                }
+                .padding(.vertical, 24)
+                .background(.background.secondary, in: RoundedRectangle(cornerRadius: 24))
+                .padding(.horizontal, 24)
             }
             .frame(maxWidth: .infinity)
         }
