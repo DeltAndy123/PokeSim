@@ -1,0 +1,2 @@
+*.sqlite filter=lfs diff=lfs merge=lfs -text
+PokeSim/Resources/pokemon.sqlite filter=lfs diff=lfs merge=lfs -text
