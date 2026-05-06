@@ -201,6 +201,7 @@ extension PokemonDatabase {
             return try dbQueue.read { db in
                 try PokemonFormRecord
                     .filter(PokemonFormRecord.Columns.pokemonID == pokemonID)
+                    .order(PokemonFormRecord.Columns.id)
                     .fetchAll(db)
             }
         } catch {
@@ -255,52 +256,88 @@ extension PokemonDatabase {
     }
 }
 
-// MARK: - Name
+// MARK: - Names
 extension PokemonDatabase {
-    func englishSpeciesName(forSpeciesID speciesID: Int) -> PokemonSpeciesNameRecord? {
+    func speciesNames(forSpeciesID speciesID: Int) -> [PokemonSpeciesNameRecord] {
+        do {
+            return try dbQueue.read { db in
+                try PokemonSpeciesNameRecord
+                    .filter(PokemonSpeciesNameRecord.Columns.speciesID == speciesID)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Failed to fetch species names: \(error)")
+            return []
+        }
+    }
+    func speciesName(forSpeciesID speciesID: Int, withLanguage lang: PokemonLanguage) -> PokemonSpeciesNameRecord? {
         do {
             return try dbQueue.read { db in
                 try PokemonSpeciesNameRecord
                     .filter(
                         PokemonSpeciesNameRecord.Columns.speciesID == speciesID &&
-                        PokemonSpeciesNameRecord.Columns.languageID == 9
+                        PokemonSpeciesNameRecord.Columns.languageID == lang.rawValue
                     )
                     .fetchOne(db)
             }
         } catch {
-            print("Failed to fetch English species name: \(error)")
+            print("Failed to fetch species name: \(error)")
             return nil
         }
     }
-    
-    func englishFormName(forFormID formID: Int) -> PokemonFormNameRecord? {
+
+    func formNames(forFormID formID: Int) -> [PokemonFormNameRecord] {
+        do {
+            return try dbQueue.read { db in
+                try PokemonFormNameRecord
+                    .filter(PokemonFormNameRecord.Columns.formID == formID)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Failed to fetch form names: \(error)")
+            return []
+        }
+    }
+    func formName(forFormID formID: Int, withLanguage lang: PokemonLanguage) -> PokemonFormNameRecord? {
         do {
             return try dbQueue.read { db in
                 try PokemonFormNameRecord
                     .filter(
                         PokemonFormNameRecord.Columns.formID == formID &&
-                        PokemonFormNameRecord.Columns.languageID == 9
+                        PokemonFormNameRecord.Columns.languageID == lang.rawValue
                     )
                     .fetchOne(db)
             }
         } catch {
-            print("Failed to fetch English form name: \(error)")
+            print("Failed to fetch form name: \(error)")
             return nil
         }
     }
 
-    func englishAbilityName(forAbilityID abilityID: Int) -> AbilityNameRecord? {
+    func abilityNames(forAbilityID abilityID: Int) -> [AbilityNameRecord] {
+        do {
+            return try dbQueue.read { db in
+                try AbilityNameRecord
+                    .filter(AbilityNameRecord.Columns.abilityID == abilityID)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Failed to fetch ability names: \(error)")
+            return []
+        }
+    }
+    func abilityName(forAbilityID abilityID: Int, withLanguage lang: PokemonLanguage) -> AbilityNameRecord? {
         do {
             return try dbQueue.read { db in
                 try AbilityNameRecord
                     .filter(
                         AbilityNameRecord.Columns.abilityID == abilityID &&
-                        AbilityNameRecord.Columns.languageID == 9
+                        AbilityNameRecord.Columns.languageID == lang.rawValue
                     )
                     .fetchOne(db)
             }
         } catch {
-            print("Failed to fetch English ability name: \(error)")
+            print("Failed to fetch ability name: \(error)")
             return nil
         }
     }
@@ -308,6 +345,7 @@ extension PokemonDatabase {
 
 // MARK: - Joins
 extension PokemonDatabase {
+    // MARK: - Moves
     func moveDetails(forPokemonID pokemonID: Int, versionGroupID: Int) -> [PokemonMoveDetail] {
         do {
             return try dbQueue.read { db in
@@ -328,6 +366,42 @@ extension PokemonDatabase {
         } catch {
             print("Failed to fetch move details: \(error)")
             return []
+        }
+    }
+    func moveDetails(forPokemonID pokemonID: Int) -> [PokemonMoveDetail] {
+        do {
+            return try dbQueue.read { db in
+                try PokemonMoveRecord
+                    .filter(PokemonMoveRecord.Columns.pokemonID == pokemonID)
+                    .including(required: PokemonMoveRecord.move)
+                    .order(
+                        PokemonMoveRecord.Columns.learnMethodID,
+                        PokemonMoveRecord.Columns.level,
+                        PokemonMoveRecord.Columns.order
+                    )
+                    .asRequest(of: PokemonMoveDetail.self)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Failed to fetch move details: \(error)")
+            return []
+        }
+    }
+    
+    // MARK: - Versions
+    func versionGroupDetails(forID versionGroupID: Int) -> VersionGroupDetail? {
+        do {
+            return try dbQueue.read { db in
+                try VersionGroupRecord
+                    .filter(VersionGroupRecord.Columns.id == versionGroupID)
+                    .including(all: VersionGroupRecord.versions
+                        .including(all: VersionRecord.versionNames))
+                    .asRequest(of: VersionGroupDetail.self)
+                    .fetchOne(db)
+            }
+        } catch {
+            print("Failed to fetch version group details: \(error)")
+            return nil
         }
     }
 }

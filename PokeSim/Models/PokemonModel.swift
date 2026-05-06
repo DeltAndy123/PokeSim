@@ -193,6 +193,42 @@ struct PokemonMoveRecord: Decodable, Identifiable, FetchableRecord, TableRecord 
     let mastery: Int?
 }
 
+struct VersionGroupRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_versiongroup" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "order" INTEGER, "generation_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_versiongroup"
+    
+    static let databaseSelection: [any SQLSelectable] = [AllColumns(), Column.rowID]
+    
+    let id: Int
+    let name: String
+    let order: Int?
+    let generation_id: Int
+}
+
+struct VersionRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_version" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "version_group_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_version"
+    
+    static let databaseSelection: [any SQLSelectable] = [AllColumns(), Column.rowID]
+    
+    let id: Int
+    let name: String
+    let version_group_id: Int
+}
+
+struct VersionNameRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_versionname" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "language_id" INTEGER, "version_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_versionname"
+    
+    let id: Int
+    let name: String
+    let language_id: Int
+    let version_id: Int
+}
+
 
 // MARK: - Extensions (helper functions)
 extension PokemonRecord {
@@ -301,7 +337,17 @@ extension PokemonMoveRecord {
     }
 }
 
+extension VersionGroupRecord {
+    enum Columns {
+        static let id = Column("id")
+        static let order = Column("order")
+        static let generationID = Column("generation_id")
+    }
+}
+
 // MARK: - Joins
+
+// MARK: Pokemon Moves
 extension PokemonMoveRecord {
     static let move = belongsTo(
         MoveRecord.self,
@@ -309,7 +355,6 @@ extension PokemonMoveRecord {
         using: ForeignKey(["move_id"])
     )
 }
-
 extension MoveRecord {
     static let pokemonMoves = hasMany(
         PokemonMoveRecord.self,
@@ -323,6 +368,101 @@ struct PokemonMoveDetail: Decodable, FetchableRecord {
     let move: MoveRecord
 }
 
+// MARK: Game Versions
+extension VersionRecord {
+    static let versionGroup = belongsTo(
+        VersionGroupRecord.self,
+        key: "versionGroup",
+        using: ForeignKey(["version_group_id"])
+    )
+    
+    static let versionNames = hasMany(
+        VersionNameRecord.self,
+        key: "versionNames",
+        using: ForeignKey(["version_id"])
+    )
+    
+    static let englishName = hasOne(
+        VersionNameRecord.self,
+        key: "englishName",
+        using: ForeignKey(["version_id"])
+    )
+        .filter(Column("language_id") == 9)
+}
+extension VersionNameRecord {
+    static let version = belongsTo(
+        VersionRecord.self,
+        key: "version",
+        using: ForeignKey(["version_id"])
+    )
+}
+extension VersionGroupRecord {
+    static let versions = hasMany(
+        VersionRecord.self,
+        key: "versions",
+        using: ForeignKey(["version_group_id"])
+    )
+}
+
+struct VersionDetail: Decodable, FetchableRecord {
+    let version: VersionRecord
+    let versionNames: [VersionNameRecord]
+}
+struct VersionGroupDetail: Decodable, FetchableRecord {
+    let versionGroup: VersionGroupRecord
+    let versions: [VersionDetail]
+}
+
+extension VersionGroupDetail {
+    func combinedNames(forLanguage lang: PokemonLanguage) -> String {
+        // example: "Red, Blue"
+        self.versions.compactMap { version in
+            version.versionNames.named(lang)?.name
+        }.joined(separator: ", ")
+    }
+}
+
+
+// MARK: - Language Helpers
+enum PokemonLanguage: Int {
+    case jaHrkt  = 1
+    case jaRoma  = 2
+    case ko      = 3
+    case zhHant  = 4
+    case fr      = 5
+    case de      = 6
+    case es      = 7
+    case it      = 8
+    case en      = 9
+    case cs      = 10
+    case ja      = 11
+    case zhHans  = 12
+    case ptBr    = 13
+}
+
+protocol LanguageScoped {
+    var language_id: Int { get }
+}
+
+extension Array where Element: LanguageScoped {
+    func named(_ language: PokemonLanguage) -> Element? {
+        first { $0.language_id == language.rawValue }
+    }
+
+    var english:  Element? { named(.en) }
+    var japanese: Element? { named(.ja) }
+    var korean:   Element? { named(.ko) }
+    var french:   Element? { named(.fr) }
+    var german:   Element? { named(.de) }
+    var spanish:  Element? { named(.es) }
+    var italian:  Element? { named(.it) }
+    var chinese:  Element? { named(.zhHans) }
+}
+
+extension PokemonSpeciesNameRecord: LanguageScoped {}
+extension PokemonFormNameRecord: LanguageScoped {}
+extension AbilityNameRecord: LanguageScoped {}
+extension VersionNameRecord: LanguageScoped {}
 
 // MARK: - Types
 

@@ -12,16 +12,16 @@ struct PokemonPage: View {
     
     let species: PokemonSpeciesRecord
     private var speciesName: String {
-        db.englishSpeciesName(forSpeciesID: species.id)?.name ?? "MISSINGNO"
+        db.speciesName(forSpeciesID: species.id, withLanguage: .en)?.name ?? "MISSINGNO"
     }
     private var variants: [PokemonRecord] {
         db.pokemon(forSpeciesID: species.id)
     }
     private var genus: String {
-        db.englishSpeciesName(forSpeciesID: species.id)?.genus ?? "UNKNOWN"
+        db.speciesName(forSpeciesID: species.id, withLanguage: .en)?.genus ?? "UNKNOWN"
     }
     
-    @State private var activeTab: PokemonTab = .about
+    @State private var activeTab: PokemonTab = .moves
     @State private var selectedVariant: PokemonRecord?
     
     private var variantTypes: [PokemonTypeRecord] {
@@ -31,14 +31,14 @@ struct PokemonPage: View {
     
     private var moves: [PokemonMoveDetail] {
         guard let selectedVariant else { return [] }
-        return db.moveDetails(forPokemonID: selectedVariant.id, versionGroupID: 1)
+        return db.moveDetails(forPokemonID: selectedVariant.id)
     }
     
     private var selectedVariantName: String {
         guard let selectedVariant else { return speciesName }
         guard let form = db.forms(forPokemonID: selectedVariant.id).first else { return speciesName }
         return selectedVariant.id == variants.first?.id ? speciesName
-        : db.englishFormName(forFormID: form.id)?.pokemon_name
+        : db.formName(forFormID: form.id, withLanguage: .en)?.pokemon_name
         ?? speciesName
     }
     
@@ -154,7 +154,7 @@ struct PokemonPage: View {
             
             HFlow {
                 ForEach(db.normalAbilities(forPokemonID: variant.id)) { ability in
-                    Text(db.englishAbilityName(forAbilityID: ability.ability_id)?.name ?? "Unknown Ability #\(ability.ability_id)")
+                    Text(db.abilityName(forAbilityID: ability.ability_id, withLanguage: .en)?.name ?? "Unknown Ability #\(ability.ability_id)")
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
@@ -162,7 +162,7 @@ struct PokemonPage: View {
                 
                 ForEach(db.hiddenAbilities(forPokemonID: variant.id)) { hiddenAbility in
                     HStack {
-                        Text(db.englishAbilityName(forAbilityID: hiddenAbility.ability_id)?.name ?? "Unknown Ability #\(hiddenAbility.ability_id)")
+                        Text(db.abilityName(forAbilityID: hiddenAbility.ability_id, withLanguage: .en)?.name ?? "Unknown Ability #\(hiddenAbility.ability_id)")
                         Text("HIDDEN")
                             .font(Font.caption)
                             .fontWeight(.heavy)
@@ -225,7 +225,7 @@ struct PokemonPage: View {
         ScrollView {
             LazyVStack {
                 ForEach(moves, id: \.pokemonMove.id) { move in
-                    Text(move.move.name)
+                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
                 }
             }
         }
@@ -320,7 +320,7 @@ struct FormCard: View {
     }
     private var formName: String {
         guard let firstForm else { return speciesName }
-        return db.englishFormName(forFormID: firstForm.id)?.name ?? speciesName
+        return db.formName(forFormID: firstForm.id, withLanguage: .en)?.name ?? speciesName
     }
     
     private var primaryType: PokemonType? {

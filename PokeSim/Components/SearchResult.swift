@@ -16,7 +16,7 @@ struct SearchResult<D: View>: View {
         } label: {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(db.englishSpeciesName(forSpeciesID: species.id)?.name ?? "MISSINGNO")
+                    Text(db.speciesName(forSpeciesID: species.id, withLanguage: .en)?.name ?? "MISSINGNO")
                         .fontWeight(.medium)
                     HStack {
                         if let pokemon = db.pokemon(forSpeciesID: species.id).first {

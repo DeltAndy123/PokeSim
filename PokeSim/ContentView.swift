@@ -19,7 +19,7 @@ struct ContentView: View {
             }
         }
         .task {
-//            print(PokemonDatabase.shared.pokemon(byID: 10))
+//            print(PokemonDatabase.shared.versionGroupDetails(forID: 32)?.combinedNames(forLanguage: .en) ?? "unknown")
         }
     }
 }
