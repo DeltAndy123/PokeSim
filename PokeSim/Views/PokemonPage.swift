@@ -21,8 +21,13 @@ struct PokemonPage: View {
         db.speciesName(forSpeciesID: species.id, withLanguage: .en)?.genus ?? "UNKNOWN"
     }
     
-    @State private var activeTab: PokemonTab = .moves
+    @State private var activeTab: PokemonTab = .about
     @State private var selectedVariant: PokemonRecord?
+    @State private var selectedVersionGroupID: Int?
+    
+    private var selectedVersionGroup: VersionGroupDetail? {
+        moveVersionGroups.first { $0.versionGroup.id == selectedVersionGroupID }
+    }
     
     private var variantTypes: [PokemonTypeRecord] {
         guard let selectedVariant else { return [] }
@@ -31,7 +36,17 @@ struct PokemonPage: View {
     
     private var moves: [PokemonMoveDetail] {
         guard let selectedVariant else { return [] }
-        return db.moveDetails(forPokemonID: selectedVariant.id)
+        guard let selectedVersionGroupID else { return [] }
+        return db.moveDetails(forPokemonID: selectedVariant.id, versionGroupID: selectedVersionGroupID)
+    }
+    
+    private var moveVersionGroups: [VersionGroupDetail] {
+        guard let selectedVariant else { return [] }
+        return db.pokemonVersionGroups(forPokemonID: selectedVariant.id)
+            .compactMap { group in
+                PokemonDatabase.shared
+                    .versionGroupDetails(forID: group.id)
+            }
     }
     
     private var selectedVariantName: String {
@@ -80,6 +95,9 @@ struct PokemonPage: View {
         }
         .onAppear {
             selectedVariant = variants.first { $0.is_default } ?? variants.first
+            selectedVersionGroupID = moveVersionGroups.first?.versionGroup.id ?? 0
+//            print(moveVersionGroups.map { $0.combinedNames(forLanguage: .en) })
+//            print(moves.first!)
         }
     }
     
@@ -222,10 +240,21 @@ struct PokemonPage: View {
     
     // MARK: - Moves Tab
     var movesTab: some View {
-        ScrollView {
+        VStack {
+            HStack {
+                Spacer()
+                Picker("Game Version", selection: $selectedVersionGroupID) {
+                    ForEach(moveVersionGroups, id: \.versionGroup.id) { versionGroup in
+                        Text(versionGroup.combinedNames(forLanguage: .en))
+                            .tag(versionGroup.versionGroup.id)
+                    }
+                }
+                .background(.background.secondary, in: Capsule())
+            }
             LazyVStack {
                 ForEach(moves, id: \.pokemonMove.id) { move in
-                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
+                    //                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
+                    PokemonMove(moveDetail: move)
                 }
             }
         }

@@ -222,6 +222,28 @@ extension PokemonDatabase {
             return []
         }
     }
+    
+    func pokemonVersionGroups(forPokemonID pokemonID: Int) -> [VersionGroupRecord] {
+        do {
+            return try dbQueue.read { db in
+                try VersionGroupRecord.fetchAll(
+                    db,
+                    sql: """
+                    SELECT DISTINCT vg.*
+                    FROM pokemon_v2_versiongroup vg
+                    INNER JOIN pokemon_v2_pokemonmove pm
+                        ON pm.version_group_id = vg.id
+                    WHERE pm.pokemon_id = ?
+                    ORDER BY vg."order"
+                    """,
+                    arguments: [pokemonID]
+                )
+            }
+        } catch {
+            print("Failed to fetch version groups for pokemon \(pokemonID): \(error)")
+            return []
+        }
+    }
 }
 
 // MARK: - Search
@@ -341,6 +363,34 @@ extension PokemonDatabase {
             return nil
         }
     }
+
+    func moveNames(forMoveID moveID: Int) -> [MoveNameRecord] {
+        do {
+            return try dbQueue.read { db in
+                try MoveNameRecord
+                    .filter(MoveNameRecord.Columns.moveID == moveID)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Failed to fetch move names: \(error)")
+            return []
+        }
+    }
+    func moveName(forMoveID moveID: Int, withLanguage lang: PokemonLanguage) -> MoveNameRecord? {
+        do {
+            return try dbQueue.read { db in
+                try MoveNameRecord
+                    .filter(
+                        MoveNameRecord.Columns.moveID == moveID &&
+                        MoveNameRecord.Columns.languageID == lang.rawValue
+                    )
+                    .fetchOne(db)
+            }
+        } catch {
+            print("Failed to fetch move name: \(error)")
+            return nil
+        }
+    }
 }
 
 // MARK: - Joins
@@ -354,7 +404,9 @@ extension PokemonDatabase {
                         PokemonMoveRecord.Columns.pokemonID == pokemonID &&
                         PokemonMoveRecord.Columns.versionGroupID == versionGroupID
                     )
-                    .including(required: PokemonMoveRecord.move)
+                    .including(required: PokemonMoveRecord.move
+                        .including(all: MoveRecord.flavorTexts
+                            .filter(MoveFlavorTextRecord.Columns.versionGroupID == versionGroupID)))
                     .order(
                         PokemonMoveRecord.Columns.learnMethodID,
                         PokemonMoveRecord.Columns.level,
@@ -373,7 +425,8 @@ extension PokemonDatabase {
             return try dbQueue.read { db in
                 try PokemonMoveRecord
                     .filter(PokemonMoveRecord.Columns.pokemonID == pokemonID)
-                    .including(required: PokemonMoveRecord.move)
+                    .including(required: PokemonMoveRecord.move
+                        .including(all: MoveRecord.flavorTexts))
                     .order(
                         PokemonMoveRecord.Columns.learnMethodID,
                         PokemonMoveRecord.Columns.level,

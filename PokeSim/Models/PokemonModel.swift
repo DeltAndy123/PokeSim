@@ -193,6 +193,29 @@ struct PokemonMoveRecord: Decodable, Identifiable, FetchableRecord, TableRecord 
     let mastery: Int?
 }
 
+struct MoveNameRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_movename" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "language_id" INTEGER, "move_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_movename"
+    
+    let id: Int
+    let name: String
+    let language_id: Int
+    let move_id: Int
+}
+
+struct MoveFlavorTextRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
+    // CREATE TABLE IF NOT EXISTS "pokemon_v2_moveflavortext" ("id" INTEGER NOT NULL, "flavor_text" TEXT NOT NULL, "language_id" INTEGER, "move_id" INTEGER, "version_group_id" INTEGER);
+    
+    static let databaseTableName = "pokemon_v2_moveflavortext"
+    
+    let id: Int
+    let flavor_text: String
+    let language_id: Int
+    let move_id: Int
+    let version_group_id: Int
+}
+
 struct VersionGroupRecord: Decodable, Identifiable, FetchableRecord, TableRecord {
     // CREATE TABLE IF NOT EXISTS "pokemon_v2_versiongroup" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "order" INTEGER, "generation_id" INTEGER);
     
@@ -337,6 +360,21 @@ extension PokemonMoveRecord {
     }
 }
 
+extension MoveNameRecord {
+    enum Columns {
+        static let moveID = Column("move_id")
+        static let languageID = Column("language_id")
+    }
+}
+
+extension MoveFlavorTextRecord {
+    enum Columns {
+        static let moveID = Column("move_id")
+        static let languageID = Column("language_id")
+        static let versionGroupID = Column("version_group_id")
+    }
+}
+
 extension VersionGroupRecord {
     enum Columns {
         static let id = Column("id")
@@ -361,11 +399,24 @@ extension MoveRecord {
         key: "pokemonMoves",
         using: ForeignKey(["move_id"])
     )
+    static let flavorTexts = hasMany(
+        MoveFlavorTextRecord.self,
+        key: "flavorTexts",
+        using: ForeignKey(["move_id"])
+    )
+}
+extension MoveFlavorTextRecord {
+    static let move = belongsTo(
+        MoveRecord.self,
+        key: "move",
+        using: ForeignKey(["move_id"])
+    )
 }
 
 struct PokemonMoveDetail: Decodable, FetchableRecord {
     let pokemonMove: PokemonMoveRecord
     let move: MoveRecord
+    let flavorTexts: [MoveFlavorTextRecord]
 }
 
 // MARK: Game Versions
@@ -463,6 +514,8 @@ extension PokemonSpeciesNameRecord: LanguageScoped {}
 extension PokemonFormNameRecord: LanguageScoped {}
 extension AbilityNameRecord: LanguageScoped {}
 extension VersionNameRecord: LanguageScoped {}
+extension MoveNameRecord: LanguageScoped {}
+extension MoveFlavorTextRecord: LanguageScoped {}
 
 // MARK: - Types
 
