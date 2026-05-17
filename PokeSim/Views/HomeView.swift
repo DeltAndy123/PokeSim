@@ -8,7 +8,12 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     
+    @Environment(AuthManager.self) private var authManager
+    
     @AppStorage("primaryTeamID") var primaryTeamID: String?
+    
+    @State private var loginSheetPresented = false
+    @State private var loginSheetIsRegister = false
     
     private var team: PokemonTeam? {
         teams.first { team in
@@ -48,8 +53,36 @@ struct HomeView: View {
             }
             .contentMargins(2)
             .navigationTitle("Home")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        if authManager.isLoggedIn {
+                            Button("Log Out", systemImage: "person.crop.circle.badge.minus", role: .destructive) {
+                                authManager.logout()
+                            }
+                        } else {
+                            Button("Log In", systemImage: "person.crop.circle") {
+                                loginSheetIsRegister = false
+                                loginSheetPresented = true
+                            }
+                            Button("Register", systemImage: "person.crop.circle.badge.plus") {
+                                loginSheetIsRegister = true
+                                loginSheetPresented = true
+                            }
+                        }
+                    } label: {
+                        if authManager.isLoggedIn {
+                            Image(systemName: "person.crop.circle.fill")
+                        } else {
+                            Image(systemName: "person.crop.circle")
+                        }
+                    }
+                }
+            }
             .padding()
             .background(Color(.systemGroupedBackground))
+            .sheet(isPresented: $loginSheetPresented) {                LoginSheet(isRegistering: loginSheetIsRegister)
+            }
         }
     }
     
@@ -190,6 +223,12 @@ struct HomeView: View {
     }
 }
 
-#Preview {
+#Preview("Logged Out") {
     HomeView()
+        .environment(AuthManager.preview())
+}
+
+#Preview("Logged In") {
+    HomeView()
+        .environment(AuthManager.preview(loggedIn: true))
 }
