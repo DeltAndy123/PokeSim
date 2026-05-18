@@ -248,12 +248,18 @@ struct PokemonDetailsView: View {
     }
     
     // MARK: - Moves Tab
-    private let lvCol: CGFloat = 36
+    private let lvCol: CGFloat = 44
     private let nameCol: CGFloat = 150
     private let typeCol: CGFloat = 110
     private let catCol: CGFloat = 52
     private let powCol: CGFloat = 48
     private let accCol: CGFloat = 44
+
+    private var machineLabels: [Int: String] {
+        guard let selectedVersionGroupID else { return [:] }
+        let ids = moves.filter { $0.pokemonMove.move_learn_method_id == 4 }.map { $0.move.id }
+        return db.machineLabels(forMoveIDs: ids, versionGroupID: selectedVersionGroupID)
+    }
 
     var movesTab: some View {
         let levelMoves = sortedMoves(
@@ -266,24 +272,82 @@ struct PokemonDetailsView: View {
         )
 
         return VStack(alignment: .leading, spacing: 16) {
-            if !levelMoves.isEmpty {
-                Text("By Level Up")
-                    .font(.caption.weight(.heavy))
-                    .textCase(.uppercase)
+            versionPicker
+
+            if levelMoves.isEmpty && machineMoves.isEmpty {
+                Text("No moves recorded for this version.")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                moveTable(moves: levelMoves, showLevel: true,
-                          sortColumn: $levelSortColumn, sortAscending: $levelSortAscending)
-            }
-            if !machineMoves.isEmpty {
-                Text("TM / HM")
-                    .font(.caption.weight(.heavy))
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                moveTable(moves: machineMoves, showLevel: false,
-                          sortColumn: $machineSortColumn, sortAscending: $machineSortAscending)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 32)
+            } else {
+                if !levelMoves.isEmpty {
+                    Text("By Level Up")
+                        .font(.caption.weight(.heavy))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                    moveTable(moves: levelMoves, showLevel: true,
+                              sortColumn: $levelSortColumn, sortAscending: $levelSortAscending)
+                }
+                if !machineMoves.isEmpty {
+                    Text("TM / HM")
+                        .font(.caption.weight(.heavy))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                    moveTable(moves: machineMoves, showLevel: false,
+                              machineLabels: machineLabels,
+                              sortColumn: $machineSortColumn, sortAscending: $machineSortAscending)
+                }
             }
         }
     }
+
+    private var groupedVersionGroups: [(key: Int, value: [VersionGroupDetail])] {
+        Dictionary(grouping: moveVersionGroups, by: \.versionGroup.generation_id)
+            .sorted { $0.key < $1.key }
+    }
+
+    private var versionPicker: some View {
+        HStack {
+            Text("Version")
+                .font(.caption.weight(.heavy))
+                .textCase(.uppercase)
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            Menu {
+                ForEach(groupedVersionGroups, id: \.key) { genID, groups in
+                    Section(groups.map { $0.combinedNames(forLanguage: .en) }.joined(separator: ", ")) {
+                        ForEach(groups, id: \.versionGroup.id) { vg in
+                            Button {
+                                selectedVersionGroupID = vg.versionGroup.id
+                            } label: {
+                                if selectedVersionGroupID == vg.versionGroup.id {
+                                    Label(vg.combinedNames(forLanguage: .en), systemImage: "checkmark")
+                                } else {
+                                    Text(vg.combinedNames(forLanguage: .en))
+                                }
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text(selectedVersionGroup?.combinedNames(forLanguage: .en) ?? "Select Version")
+                        .lineLimit(1)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.background.secondary, in: Capsule())
+                .foregroundStyle(.primary)
+            }
+        }
+    }
+
 
     private func sortedMoves(
         _ moves: [PokemonMoveDetail],
@@ -307,16 +371,15 @@ struct PokemonDetailsView: View {
     private func moveTable(
         moves: [PokemonMoveDetail],
         showLevel: Bool,
+        machineLabels: [Int: String] = [:],
         sortColumn: Binding<MoveColumn>,
         sortAscending: Binding<Bool>
     ) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 8) {
-                    if showLevel {
-                        sortHeader("Lv.", column: .level, width: lvCol, alignment: .center,
-                                   sortColumn: sortColumn, sortAscending: sortAscending)
-                    }
+                    sortHeader(showLevel ? "Lv." : "TM", column: .level, width: lvCol, alignment: .center,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
                     sortHeader("Move", column: .name, width: nameCol, alignment: .leading,
                                sortColumn: sortColumn, sortAscending: sortAscending)
                     sortHeader("Type", column: .type, width: typeCol, alignment: .center,
@@ -341,6 +404,9 @@ struct PokemonDetailsView: View {
                         HStack(spacing: 8) {
                             if showLevel {
                                 Text("\(move.pokemonMove.level)")
+                                    .frame(width: lvCol, alignment: .center)
+                            } else {
+                                Text(machineLabels[move.move.id] ?? "—")
                                     .frame(width: lvCol, alignment: .center)
                             }
                             Text(db.moveName(forMoveID: move.move.id, withLanguage: .en)?.name ?? move.move.name)

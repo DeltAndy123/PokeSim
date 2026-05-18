@@ -10,7 +10,7 @@ class AuthManager {
     private let client: BackendClient
     
     init() {
-        client = BackendClient(baseURL: URL(string: "http://localhost:3000")!)
+        client = BackendClient(baseURL: URL(string: "http://pokesim.deltandy.me/")!)
     }
     
     static func preview(loggedIn: Bool = false) -> AuthManager {

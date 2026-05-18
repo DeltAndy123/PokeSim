@@ -492,4 +492,37 @@ extension PokemonDatabase {
             return nil
         }
     }
+
+    // MARK: - Machines (TM/HM)
+    func machineLabels(forMoveIDs moveIDs: [Int], versionGroupID: Int) -> [Int: String] {
+        guard !moveIDs.isEmpty else { return [:] }
+        do {
+            return try dbQueue.read { db in
+                let placeholders = moveIDs.map { _ in "?" }.joined(separator: ",")
+                let rows = try Row.fetchAll(
+                    db,
+                    sql: """
+                    SELECT m.move_id, i.name
+                    FROM pokemon_v2_machine m
+                    JOIN pokemon_v2_item i ON i.id = m.item_id
+                    WHERE m.move_id IN (\(placeholders))
+                      AND m.version_group_id = ?
+                    """,
+                    arguments: StatementArguments(moveIDs + [versionGroupID])
+                )
+                var result: [Int: String] = [:]
+                for row in rows {
+                    let moveID: Int? = row["move_id"]
+                    let name: String? = row["name"]
+                    if let moveID, let name {
+                        result[moveID] = name.uppercased()
+                    }
+                }
+                return result
+            }
+        } catch {
+            print("Failed to fetch machine labels: \(error)")
+            return [:]
+        }
+    }
 }
