@@ -240,24 +240,46 @@ struct PokemonDetailsView: View {
     
     // MARK: - Moves Tab
     var movesTab: some View {
-        VStack {
+//            HStack {
+//                Spacer()
+//                Picker("Game Version", selection: $selectedVersionGroupID) {
+//                    ForEach(moveVersionGroups, id: \.versionGroup.id) { versionGroup in
+//                        Text(versionGroup.combinedNames(forLanguage: .en))
+//                            .tag(versionGroup.versionGroup.id)
+//                    }
+//                }
+//                .background(.background.secondary, in: Capsule())
+//            }
+//            LazyVStack {
+//                ForEach(moves, id: \.pokemonMove.id) { move in
+//                    //                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
+//                    PokemonMove(moveDetail: move)
+//                }
+//            }
+        ScrollView(.horizontal) {
             HStack {
-                Spacer()
-                Picker("Game Version", selection: $selectedVersionGroupID) {
-                    ForEach(moveVersionGroups, id: \.versionGroup.id) { versionGroup in
-                        Text(versionGroup.combinedNames(forLanguage: .en))
-                            .tag(versionGroup.versionGroup.id)
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text("Level Move Type Cat Power Acc")
+                            
+                        }
+                        ForEach(moves, id: \.pokemonMove.id) { move in
+                            Text("\(move.pokemonMove.level) \(move.move.name) \(move.move.type.name) \(move.move.move_damage_class_id) \(move.move.power ?? 0) \(move.move.accuracy ?? 0)")
+                        }
                     }
+                    .frame(width: .infinity)
                 }
-                .background(.background.secondary, in: Capsule())
+                .background(.gray)
+//                ScrollView(.vertical) {
+//                    VStack {
+//                        
+//                    }
+//                }
             }
-            LazyVStack {
-                ForEach(moves, id: \.pokemonMove.id) { move in
-                    //                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
-                    PokemonMove(moveDetail: move)
-                }
-            }
+            .frame(height: .infinity)
         }
+        .background(.lightgray)
     }
 }
 
