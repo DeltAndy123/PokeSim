@@ -7,18 +7,27 @@ class PokemonTeam {
     
     var name: String
     var sortIndex: Int
-    var pokemonIDs: [Int]
     
-    var pokemonList: [PokemonRecord] {
-        pokemonIDs.compactMap { id in
-            PokemonDatabase.shared.pokemon(byID: id)
-        }
+    @Relationship(deleteRule: .cascade) var members: [TeamMember] = []
+    
+    var orderedMembers: [TeamMember] {
+        members.sorted { $0.slot < $1.slot }
     }
     
-    init(name: String, sortIndex: Int = 0, pokemonIDs: [Int] = []) {
+    var pokemonList: [PokemonRecord] {
+        members.compactMap { PokemonDatabase.shared.pokemon(byID: $0.pokemonID) }
+    }
+    
+    init(name: String, sortIndex: Int = 0, members: [TeamMember] = []) {
         self.name = name
         self.sortIndex = sortIndex
-        self.pokemonIDs = pokemonIDs
+        self.members = members
+    }
+    
+    func updateMemberOrders() {
+        for (i, member) in orderedMembers.enumerated() {
+            member.slot = i
+        }
     }
 }
 
@@ -26,13 +35,25 @@ extension PokemonTeam {
     @MainActor
     static var preview: ModelContainer {
         let container = try! ModelContainer(
-            for: PokemonTeam.self,
+            for: PokemonTeam.self, TeamMember.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
         
-        let team1 = PokemonTeam(name: "First Team", sortIndex: 0, pokemonIDs: [448, 964, 959, 445, 911, 909])
-        let team2 = PokemonTeam(name: "Second Team", sortIndex: 1, pokemonIDs: [658, 282, 959, 445])
-        let team3 = PokemonTeam(name: "Empty Team", sortIndex: 2, pokemonIDs: [])
+        let team1 = PokemonTeam(name: "First Team", sortIndex: 0, members: [
+            TeamMember(pokemonID: 448, moveIDs: [], slot: 0),
+            TeamMember(pokemonID: 964, moveIDs: [], slot: 1),
+            TeamMember(pokemonID: 959, moveIDs: [], slot: 2),
+            TeamMember(pokemonID: 445, moveIDs: [], slot: 3),
+            TeamMember(pokemonID: 911, moveIDs: [], slot: 4),
+            TeamMember(pokemonID: 909, moveIDs: [], slot: 5)
+        ])
+        let team2 = PokemonTeam(name: "Second Team", sortIndex: 1, members: [
+            TeamMember(pokemonID: 658, moveIDs: [], slot: 0),
+            TeamMember(pokemonID: 282, moveIDs: [], slot: 1),
+            TeamMember(pokemonID: 959, moveIDs: [], slot: 2),
+            TeamMember(pokemonID: 445, moveIDs: [], slot: 3)
+        ])
+        let team3 = PokemonTeam(name: "Empty Team", sortIndex: 2, members: [])
         
         container.mainContext.insert(team1)
         container.mainContext.insert(team2)
@@ -42,4 +63,13 @@ extension PokemonTeam {
         
         return container
     }
+    
+    static var previewTeam = PokemonTeam(name: "First Team", sortIndex: 0, members: [
+        TeamMember(pokemonID: 448, moveIDs: [], slot: 0),
+        TeamMember(pokemonID: 964, moveIDs: [], slot: 1),
+        TeamMember(pokemonID: 959, moveIDs: [], slot: 2),
+        TeamMember(pokemonID: 445, moveIDs: [], slot: 3),
+        TeamMember(pokemonID: 911, moveIDs: [], slot: 4),
+        TeamMember(pokemonID: 909, moveIDs: [], slot: 5)
+    ])
 }

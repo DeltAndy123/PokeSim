@@ -27,7 +27,11 @@ struct CreateTeamSheet: View {
                 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", systemImage: "checkmark") {
-                        let newTeam = PokemonTeam(name: createTeamName.trimmingCharacters(in: .whitespaces), sortIndex: teams.count, pokemonIDs: [])
+                        let newTeam = PokemonTeam(
+                            name: createTeamName.trimmingCharacters(in: .whitespaces),
+                            sortIndex: teams.count,
+                            members: []
+                        )
                         modelContext.insert(newTeam)
                         dismiss()
                     }

@@ -441,6 +441,41 @@ extension PokemonDatabase {
         }
     }
     
+    func learnableMoves(forPokemonID pokemonID: Int) -> [MoveRecord] {
+        do {
+            return try dbQueue.read { db in
+                try MoveRecord.fetchAll(
+                    db,
+                    sql: """
+                    SELECT DISTINCT m.*
+                    FROM pokemon_v2_move m
+                    INNER JOIN pokemon_v2_pokemonmove pm ON pm.move_id = m.id
+                    WHERE pm.pokemon_id = ?
+                    ORDER BY m.id
+                    """,
+                    arguments: [pokemonID]
+                )
+            }
+        } catch {
+            print("Failed to fetch learnable moves for pokemon \(pokemonID): \(error)")
+            return []
+        }
+    }
+
+    func move(byID id: Int) -> MoveRecord? {
+        do {
+            return try dbQueue.read { db in
+                try MoveRecord
+                    .filter(MoveRecord.Columns.id == id)
+                    .fetchOne(db)
+            }
+        } catch {
+            print("Failed to fetch move \(id): \(error)")
+            return nil
+        }
+    }
+
+    
     // MARK: - Versions
     func versionGroupDetails(forID versionGroupID: Int) -> VersionGroupDetail? {
         do {

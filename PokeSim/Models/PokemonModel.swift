@@ -349,6 +349,12 @@ extension PokemonStatRecord {
     }
 }
 
+extension MoveRecord {
+    enum Columns {
+        static let id = Column("id")
+    }
+}
+
 extension PokemonMoveRecord {
     enum Columns {
         static let order = Column("order")

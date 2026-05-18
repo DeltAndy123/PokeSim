@@ -89,7 +89,7 @@ struct TeamsView: View {
         let isPrimary = team.id.uuidString == primaryTeamID
         
         return NavigationLink {
-            TeamPage(team: team)
+            EditTeamView(team: team)
         } label: {
             VStack(spacing: 0) {
                 // Header

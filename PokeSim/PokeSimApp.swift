@@ -11,6 +11,6 @@ struct PokeSimApp: App {
                 .environment(authManager)
                 .task { await authManager.restoreSession() }
         }
-        .modelContainer(for: PokemonTeam.self)
+        .modelContainer(for: [PokemonTeam.self, TeamMember.self])
     }
 }

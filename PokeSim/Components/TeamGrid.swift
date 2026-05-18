@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
+    private let db = PokemonDatabase.shared
+    
     let team: PokemonTeam
     let pokemonCircleStyle: S1
     let emptyCircleStyle: S2
@@ -47,8 +49,7 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                 ForEach(0..<6, id: \.self) { (index: Int) in
                     if let onPokemonTap {
                         Button { onPokemonTap(index) } label: {
-                            if team.pokemonList.count > index {
-                                let pokemon = team.pokemonList[index]
+                            if team.members.count > index, let pokemon = db.pokemon(byID: team.orderedMembers[index].pokemonID) {
                                 PokemonCircle(pokemon: pokemon, pokemonClickable: true, style: pokemonCircleStyle)
                                     .contextMenu {
                                         pokemonContextMenu?(index)
@@ -77,9 +78,9 @@ struct TeamGrid<S1: ShapeStyle, S2: ShapeStyle, MenuItems: View>: View {
                     } else if team.pokemonList.count > index {
                         let pokemon = team.pokemonList[index]
                         if pokemonClickable {
-                            if let species = PokemonDatabase.shared.species(byID: pokemon.pokemon_species_id) {
+                            if let species = db.species(byID: pokemon.pokemon_species_id) {
                                 NavigationLink {
-                                    PokemonPage(species: species)
+                                    PokemonDetailsView(species: species)
                                 } label: {
                                     PokemonCircle(pokemon: pokemon, pokemonClickable: pokemonClickable, style: pokemonCircleStyle)
                                 }
@@ -138,7 +139,13 @@ struct PokemonCircle<S: ShapeStyle>: View {
         TeamGrid(
             team: PokemonTeam(
                 name: "Team 1",
-                pokemonIDs: [448, 964, 959, 445, 911]
+                members: [
+                    TeamMember(pokemonID: 448, moveIDs: [], slot: 0),
+                    TeamMember(pokemonID: 964, moveIDs: [], slot: 1),
+                    TeamMember(pokemonID: 959, moveIDs: [], slot: 2),
+                    TeamMember(pokemonID: 445, moveIDs: [], slot: 3),
+                    TeamMember(pokemonID: 911, moveIDs: [], slot: 4)
+                ]
             ),
             pokemonClickable: true
         )

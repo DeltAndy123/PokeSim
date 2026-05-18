@@ -1,19 +1,17 @@
 import SwiftUI
 
-struct SearchResult<D: View>: View {
+struct SearchResult<V: Hashable>: View {
     let species: PokemonSpeciesRecord
-    let destination: D
+    let value: V
     private let db = PokemonDatabase.shared
     
-    init(species: PokemonSpeciesRecord, @ViewBuilder destination: () -> D) {
+    init(species: PokemonSpeciesRecord, value: V) {
         self.species = species
-        self.destination = destination()
+        self.value = value
     }
     
     var body: some View {
-        NavigationLink {
-            destination
-        } label: {
+        NavigationLink(value: value) {
             HStack {
                 VStack(alignment: .leading) {
                     Text(db.speciesName(forSpeciesID: species.id, withLanguage: .en)?.name ?? "MISSINGNO")

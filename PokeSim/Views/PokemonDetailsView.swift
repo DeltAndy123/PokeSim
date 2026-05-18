@@ -5,7 +5,7 @@ enum PokemonTab {
     case about, stats, forms, moves
 }
 
-struct PokemonPage: View {
+struct PokemonDetailsView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private let db = PokemonDatabase.shared
@@ -389,15 +389,9 @@ struct FormCard: View {
     }
 }
 
-struct MoveCard: View {
-    var body: some View {
-        
-    }
-}
-
 
 #Preview {
     NavigationStack {
-        PokemonPage(species: PokemonDatabase.shared.species(byID: 6)!)
+        PokemonDetailsView(species: PokemonDatabase.shared.species(byID: 6)!)
     }
 }
