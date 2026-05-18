@@ -5,6 +5,10 @@ enum PokemonTab {
     case about, stats, forms, moves
 }
 
+enum MoveColumn {
+    case level, name, type, category, power, accuracy
+}
+
 struct PokemonDetailsView: View {
     @Environment(\.colorScheme) private var colorScheme
 
@@ -24,6 +28,11 @@ struct PokemonDetailsView: View {
     @State private var activeTab: PokemonTab = .about
     @State private var selectedVariant: PokemonRecord?
     @State private var selectedVersionGroupID: Int?
+
+    @State private var levelSortColumn: MoveColumn = .level
+    @State private var levelSortAscending: Bool = true
+    @State private var machineSortColumn: MoveColumn = .name
+    @State private var machineSortAscending: Bool = true
     
     private var selectedVersionGroup: VersionGroupDetail? {
         moveVersionGroups.first { $0.versionGroup.id == selectedVersionGroupID }
@@ -239,47 +248,188 @@ struct PokemonDetailsView: View {
     }
     
     // MARK: - Moves Tab
+    private let lvCol: CGFloat = 36
+    private let nameCol: CGFloat = 150
+    private let typeCol: CGFloat = 110
+    private let catCol: CGFloat = 52
+    private let powCol: CGFloat = 48
+    private let accCol: CGFloat = 44
+
     var movesTab: some View {
-//            HStack {
-//                Spacer()
-//                Picker("Game Version", selection: $selectedVersionGroupID) {
-//                    ForEach(moveVersionGroups, id: \.versionGroup.id) { versionGroup in
-//                        Text(versionGroup.combinedNames(forLanguage: .en))
-//                            .tag(versionGroup.versionGroup.id)
-//                    }
-//                }
-//                .background(.background.secondary, in: Capsule())
-//            }
-//            LazyVStack {
-//                ForEach(moves, id: \.pokemonMove.id) { move in
-//                    //                    Text("\(move.move.name) - \(move.pokemonMove.level) - \(move.pokemonMove.version_group_id)")
-//                    PokemonMove(moveDetail: move)
-//                }
-//            }
-        ScrollView(.horizontal) {
-            HStack {
-                ScrollView(.vertical) {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Level Move Type Cat Power Acc")
-                            
-                        }
-                        ForEach(moves, id: \.pokemonMove.id) { move in
-                            Text("\(move.pokemonMove.level) \(move.move.name) \(move.move.type.name) \(move.move.move_damage_class_id) \(move.move.power ?? 0) \(move.move.accuracy ?? 0)")
-                        }
-                    }
-                    .frame(width: .infinity)
-                }
-                .background(.gray)
-//                ScrollView(.vertical) {
-//                    VStack {
-//                        
-//                    }
-//                }
+        let levelMoves = sortedMoves(
+            moves.filter { $0.pokemonMove.move_learn_method_id == 1 },
+            by: levelSortColumn, ascending: levelSortAscending
+        )
+        let machineMoves = sortedMoves(
+            moves.filter { $0.pokemonMove.move_learn_method_id == 4 },
+            by: machineSortColumn, ascending: machineSortAscending
+        )
+
+        return VStack(alignment: .leading, spacing: 16) {
+            if !levelMoves.isEmpty {
+                Text("By Level Up")
+                    .font(.caption.weight(.heavy))
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
+                moveTable(moves: levelMoves, showLevel: true,
+                          sortColumn: $levelSortColumn, sortAscending: $levelSortAscending)
             }
-            .frame(height: .infinity)
+            if !machineMoves.isEmpty {
+                Text("TM / HM")
+                    .font(.caption.weight(.heavy))
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
+                moveTable(moves: machineMoves, showLevel: false,
+                          sortColumn: $machineSortColumn, sortAscending: $machineSortAscending)
+            }
         }
-        .background(.lightgray)
+    }
+
+    private func sortedMoves(
+        _ moves: [PokemonMoveDetail],
+        by column: MoveColumn,
+        ascending: Bool
+    ) -> [PokemonMoveDetail] {
+        moves.sorted { a, b in
+            let less: Bool
+            switch column {
+            case .level:    less = a.pokemonMove.level < b.pokemonMove.level
+            case .name:     less = a.move.name < b.move.name
+            case .type:     less = a.move.type.name < b.move.type.name
+            case .category: less = a.move.move_damage_class_id < b.move.move_damage_class_id
+            case .power:    less = (a.move.power ?? -1) < (b.move.power ?? -1)
+            case .accuracy: less = (a.move.accuracy ?? -1) < (b.move.accuracy ?? -1)
+            }
+            return ascending ? less : !less
+        }
+    }
+
+    private func moveTable(
+        moves: [PokemonMoveDetail],
+        showLevel: Bool,
+        sortColumn: Binding<MoveColumn>,
+        sortAscending: Binding<Bool>
+    ) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 8) {
+                    if showLevel {
+                        sortHeader("Lv.", column: .level, width: lvCol, alignment: .center,
+                                   sortColumn: sortColumn, sortAscending: sortAscending)
+                    }
+                    sortHeader("Move", column: .name, width: nameCol, alignment: .leading,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
+                    sortHeader("Type", column: .type, width: typeCol, alignment: .center,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
+                    sortHeader("Cat", column: .category, width: catCol, alignment: .center,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
+                    sortHeader("Power", column: .power, width: powCol, alignment: .center,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
+                    sortHeader("Acc", column: .accuracy, width: accCol, alignment: .center,
+                               sortColumn: sortColumn, sortAscending: sortAscending)
+                }
+                .font(.caption)
+                .fontWeight(.heavy)
+                .textCase(.uppercase)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+                Divider()
+
+                LazyVStack(spacing: 0) {
+                    ForEach(moves, id: \.pokemonMove.id) { move in
+                        HStack(spacing: 8) {
+                            if showLevel {
+                                Text("\(move.pokemonMove.level)")
+                                    .frame(width: lvCol, alignment: .center)
+                            }
+                            Text(db.moveName(forMoveID: move.move.id, withLanguage: .en)?.name ?? move.move.name)
+                                .frame(width: nameCol, alignment: .leading)
+                            moveTypeBadge(move.move.type)
+                            damageClassIcon(move.move.move_damage_class_id)
+                            Text(move.move.power.map(\.description) ?? "—")
+                                .frame(width: powCol, alignment: .center)
+                            Text(move.move.accuracy.map(\.description) ?? "—")
+                                .frame(width: accCol, alignment: .center)
+                        }
+                        .font(.subheadline)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+
+                        Divider().padding(.leading, 12)
+                    }
+                }
+            }
+            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private func sortHeader(
+        _ title: String,
+        column: MoveColumn,
+        width: CGFloat,
+        alignment: Alignment,
+        sortColumn: Binding<MoveColumn>,
+        sortAscending: Binding<Bool>
+    ) -> some View {
+        let isActive = sortColumn.wrappedValue == column
+        return Button {
+            if isActive {
+                sortAscending.wrappedValue.toggle()
+            } else {
+                sortColumn.wrappedValue = column
+                sortAscending.wrappedValue = true
+            }
+        } label: {
+            HStack(spacing: 2) {
+                Text(title)
+                if isActive {
+                    Image(systemName: sortAscending.wrappedValue ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 8, weight: .heavy))
+                }
+            }
+            .frame(width: width, alignment: alignment)
+            .foregroundStyle(isActive ? .primary : .secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func moveTypeBadge(_ type: PokemonType) -> some View {
+        Text(type.name.uppercased())
+            .font(.system(size: 11, weight: .heavy))
+            .tracking(0.8)
+            .lineLimit(1)
+            .foregroundStyle(colorScheme == .dark ? type.colors.accent : .white)
+            .frame(width: typeCol - 8, alignment: .center)
+            .padding(.vertical, 3)
+            .padding(.horizontal, 4)
+            .background(colorScheme == .dark ? type.colors.dim : type.colors.bg, in: Capsule())
+            .frame(width: typeCol)
+    }
+
+    @ViewBuilder
+    private func damageClassIcon(_ id: Int) -> some View {
+        let config: (image: String, color: Color)? = switch id {
+        case 1: ("status",   .gray)
+        case 2: ("physical", .orange)
+        case 3: ("special",  .blue)
+        default: nil
+        }
+        if let config {
+            Image(config.image)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .foregroundStyle(config.color)
+                .frame(width: 24, height: 24)
+                .padding(3)
+                .background(config.color.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
+                .frame(width: catCol)
+        } else {
+            Text("—")
+                .foregroundStyle(.secondary)
+                .frame(width: catCol, alignment: .center)
+        }
     }
 }
 
