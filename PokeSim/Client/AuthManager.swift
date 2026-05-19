@@ -11,7 +11,7 @@ class AuthManager {
     private let client: BackendClient
     
     init() {
-        client = BackendClient(baseURL: URL(string: "http://pokesim.deltandy.me/")!)
+        client = BackendClient(baseURL: URL(string: Constants.apiBaseURL)!)
     }
     
     static func preview(loggedIn: Bool = false) -> AuthManager {
@@ -59,6 +59,8 @@ class AuthManager {
         ]
         SecItemDelete(query as CFDictionary)
     }
+    
+    func token() -> String? { loadToken() }
     
     // MARK: - Authentication
     func login(into context: ModelContext, username: String, password: String) async throws {

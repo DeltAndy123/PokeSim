@@ -75,7 +75,7 @@ struct TeamsView: View {
                                 syncing = true
                                 let synced = try await authManager.pullTeams(into: modelContext)
                                 syncing = false
-                                print("synced \(synced) teams")
+//                                print("synced \(synced) teams")
                             }
                         }
                     }
@@ -105,7 +105,7 @@ struct TeamsView: View {
                 syncing = true
                 let synced = try? await authManager.pullTeams(into: modelContext)
                 syncing = false
-                print("synced \(synced ?? 0) teams")
+//                print("synced \(synced ?? 0) teams")
             }
         }
     }
