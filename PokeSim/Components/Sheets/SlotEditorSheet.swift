@@ -12,6 +12,7 @@ struct SlotEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dismissSearch) private var dismissSearch
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
     private let db = PokemonDatabase.shared
     
     @State private var path = NavigationPath()
@@ -127,8 +128,8 @@ struct SlotEditorSheet: View {
                             .toolbar {
                                 ToolbarItem(placement: .confirmationAction) {
                                     Button("Select", systemImage: "checkmark") {
-                                        changePokemon(pokemonID: id)
                                         Task { @MainActor in
+                                            try await changePokemon(pokemonID: id)
                                             // There's a bug that breaks removeLast(2) if there's a search so we have to do this
                                             path.removeLast()
                                             try? await Task.sleep(for: .milliseconds(10))
@@ -145,12 +146,15 @@ struct SlotEditorSheet: View {
                             slot: slot,
                             member: member
                         ) { move in
-                            if slot < member.moveIDs.count {
-                                member.moveIDs[slot] = move.id
-                            } else {
-                                member.moveIDs.append(move.id)
+                            Task {
+                                if slot < member.moveIDs.count {
+                                    member.moveIDs[slot] = move.id
+                                } else {
+                                    member.moveIDs.append(move.id)
+                                }
+                                path.removeLast()
+                                try await authManager.pushTeam(team)
                             }
-                            path.removeLast()
                         }
                     }
                 }
@@ -167,7 +171,10 @@ struct SlotEditorSheet: View {
                         PokemonMoveCard(slot: slot, moveID: move.id, isDisabled: false)
                             .contextMenu {
                                 Button("Remove", systemImage: "trash", role: .destructive) {
-                                    member?.moveIDs.remove(at: slot)
+                                    Task {
+                                        member?.moveIDs.remove(at: slot)
+                                        try await authManager.pushTeam(team)
+                                    }
                                 }
                             }
                     } else if slot == moveIDs.count {
@@ -182,7 +189,7 @@ struct SlotEditorSheet: View {
         }
     }
     
-    private func changePokemon(pokemonID: Int) {
+    private func changePokemon(pokemonID: Int) async throws {
         if isNewMember {
             let newMember = TeamMember(pokemonID: pokemonID, moveIDs: [], slot: team.members.count)
             modelContext.insert(newMember)
@@ -191,6 +198,7 @@ struct SlotEditorSheet: View {
             team.orderedMembers[memberIndex].pokemonID = pokemonID
             team.orderedMembers[memberIndex].moveIDs = []
         }
+        try await authManager.pushTeam(team)
     }
 }
 

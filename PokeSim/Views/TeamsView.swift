@@ -5,6 +5,7 @@ struct TeamsView: View {
     @Query(sort: \PokemonTeam.sortIndex) var teams: [PokemonTeam]
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(AuthManager.self) private var authManager
     
     @AppStorage("primaryTeamID") var primaryTeamID: String?
     
@@ -13,6 +14,8 @@ struct TeamsView: View {
     @State private var showRenameAlert: Bool = false
     @State private var renameTeamName: String = ""
     @State private var selectedTeam: PokemonTeam?
+    
+    @State private var syncing: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -39,7 +42,10 @@ struct TeamsView: View {
                             }
                             
                             for index in indices {
-                                modelContext.delete(teams[index])
+                                Task {
+                                    try await authManager.removeTeam(teams[index])
+                                    modelContext.delete(teams[index])
+                                }
                             }
                         }
                         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -60,6 +66,20 @@ struct TeamsView: View {
                         showCreateTeamSheet = true
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if syncing {
+                        ProgressView()
+                    } else {
+                        Button("Sync", systemImage: "arrow.trianglehead.2.clockwise.rotate.90") {
+                            Task {
+                                syncing = true
+                                let synced = try await authManager.pullTeams(into: modelContext)
+                                syncing = false
+                                print("synced \(synced) teams")
+                            }
+                        }
+                    }
+                }
             }
             .sheet(isPresented: $showCreateTeamSheet) {
                 CreateTeamSheet()
@@ -70,13 +90,22 @@ struct TeamsView: View {
                     .textInputAutocapitalization(.words)
                 Button("Cancel", role: .cancel) { }
                 Button("Save", role: .confirm) {
-                    if let team = selectedTeam {
-                        team.name = renameTeamName.trimmingCharacters(in: .whitespaces)
+                    Task {
+                        if let team = selectedTeam {
+                            team.name = renameTeamName.trimmingCharacters(in: .whitespaces)
+                            try await authManager.pushTeam(team)
+                        }
                     }
                 }
                 .disabled(renameTeamName.trimmingCharacters(in: .whitespaces).isEmpty)
             } message: {
                 Text("Enter a new name for the team")
+            }
+            .task {
+                syncing = true
+                let synced = try? await authManager.pullTeams(into: modelContext)
+                syncing = false
+                print("synced \(synced ?? 0) teams")
             }
         }
     }
@@ -178,7 +207,9 @@ struct TeamsView: View {
             }
             
             Button("Delete", systemImage: "trash", role: .destructive) {
-                deleteTeam(team)
+                Task {
+                    try await deleteTeam(team)
+                }
             }
         }
     }
@@ -206,7 +237,7 @@ struct TeamsView: View {
     
     
     // MARK: - Helper Functions
-    func deleteTeam(_ team: PokemonTeam) {
+    func deleteTeam(_ team: PokemonTeam) async throws {
         if let index = teams.firstIndex(of: team) {
             var reordered = teams
             reordered.remove(at: index)
@@ -214,6 +245,7 @@ struct TeamsView: View {
                 team.sortIndex = index
             }
         }
+        try await authManager.removeTeam(team)
         modelContext.delete(team)
     }
     

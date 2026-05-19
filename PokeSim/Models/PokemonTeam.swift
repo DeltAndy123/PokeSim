@@ -4,6 +4,7 @@ import SwiftData
 @Model
 class PokemonTeam {
     var id: UUID = UUID()
+    var remoteID: Int?
     
     var name: String
     var sortIndex: Int
@@ -22,6 +23,15 @@ class PokemonTeam {
         self.name = name
         self.sortIndex = sortIndex
         self.members = members
+    }
+    
+    init(from teamDetails: RemoteTeam, sortOrder: Int = 0) {
+        self.name = teamDetails.name
+        self.sortIndex = sortOrder
+        self.remoteID = teamDetails.id
+        self.members = teamDetails.pokemon.enumerated().map { index, pokemon in
+            TeamMember(pokemonID: pokemon.pokemonId, moveIDs: pokemon.moves, slot: index)
+        }
     }
     
     func updateMemberOrders() {
@@ -55,9 +65,9 @@ extension PokemonTeam {
         ])
         let team3 = PokemonTeam(name: "Empty Team", sortIndex: 2, members: [])
         
-        container.mainContext.insert(team1)
-        container.mainContext.insert(team2)
-        container.mainContext.insert(team3)
+//        container.mainContext.insert(team1)
+//        container.mainContext.insert(team2)
+//        container.mainContext.insert(team3)
         
         UserDefaults.standard.set(team1.id.uuidString, forKey: "primaryTeamID")
         

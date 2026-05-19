@@ -3,6 +3,7 @@ import SwiftData
 
 struct CreateTeamSheet: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
     @Query var teams: [PokemonTeam]
     @Environment(\.dismiss) private var dismiss
     
@@ -32,7 +33,10 @@ struct CreateTeamSheet: View {
                             sortIndex: teams.count,
                             members: []
                         )
-                        modelContext.insert(newTeam)
+                        Task {
+                            modelContext.insert(newTeam)
+                            try await authManager.pushTeam(newTeam)
+                        }
                         dismiss()
                     }
                     .disabled(createTeamName.trimmingCharacters(in: .whitespaces).isEmpty)

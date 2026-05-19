@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct EditTeamView: View {
+    @Environment(AuthManager.self) private var authManager
+    
     @State var team: PokemonTeam
     
     private struct MemberSlot: Identifiable {
@@ -20,16 +22,22 @@ struct EditTeamView: View {
                 ) { index in
                     selectedMemberIndex = MemberSlot(id: index)
                 } onReorder: { from, to in
-                    var ordered = team.orderedMembers
-                    ordered.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
-                    for (i, member) in ordered.enumerated() {
-                        member.slot = i
+                    Task {
+                        var ordered = team.orderedMembers
+                        ordered.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
+                        for (i, member) in ordered.enumerated() {
+                            member.slot = i
+                        }
+                        try await authManager.pushTeam(team)
                     }
                 } pokemonContextMenu: { index in
                     Button("Remove", systemImage: "trash", role: .destructive) {
-                        let memberToRemove = team.orderedMembers[index]
-                        team.members.removeAll { $0 === memberToRemove }
-                        team.updateMemberOrders()
+                        Task {
+                            let memberToRemove = team.orderedMembers[index]
+                            team.members.removeAll { $0 === memberToRemove }
+                            team.updateMemberOrders()
+                            try await authManager.pushTeam(team)
+                        }
                     }
                 }
                 .padding(.vertical, 24)
@@ -40,7 +48,6 @@ struct EditTeamView: View {
         }
         .navigationTitle(team.name)
         .sheet(item: $selectedMemberIndex) { slot in
-//            SelectPokemonSheet(team: team, pokemonIndex: slot.id)
             SlotEditorSheet(team: team, memberIndex: slot.id)
         }
     }
@@ -75,6 +82,7 @@ struct pokemonRow {
     
     NavigationStack {
         EditTeamView(team: team)
+            .environment(AuthManager.preview())
             .modelContainer(PokemonTeam.preview)
     }
 }

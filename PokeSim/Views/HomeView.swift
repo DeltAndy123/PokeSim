@@ -57,10 +57,16 @@ struct HomeView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         if authManager.isLoggedIn {
+                            Text("Logged in as \(authManager.currentUser?.username ?? "UNKNOWN")")
+                                .font(.subheadline)
                             Button("Log Out", systemImage: "person.crop.circle.badge.minus", role: .destructive) {
-                                authManager.logout()
+                                Task {
+                                    try authManager.logout(from: modelContext)
+                                }
                             }
                         } else {
+                            Text("Not logged in")
+                                .font(.subheadline)
                             Button("Log In", systemImage: "person.crop.circle") {
                                 loginSheetIsRegister = false
                                 loginSheetPresented = true
@@ -81,7 +87,11 @@ struct HomeView: View {
             }
             .padding()
             .background(Color(.systemGroupedBackground))
-            .sheet(isPresented: $loginSheetPresented) {                LoginSheet(isRegistering: loginSheetIsRegister)
+            .sheet(isPresented: $loginSheetPresented) {
+                LoginSheet(isRegistering: loginSheetIsRegister)
+            }
+            .task {
+                let _ = try? await authManager.pullTeams(into: modelContext)
             }
         }
     }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LoginSheet: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
     
@@ -88,7 +89,7 @@ struct LoginSheet: View {
             if isRegistering {
                 try await authManager.register(username: username, password: password)
             } else {
-                try await authManager.login(username: username, password: password)
+                try await authManager.login(into: modelContext, username: username, password: password)
             }
             dismiss()
         } catch BackendError.validation(let errors) {
