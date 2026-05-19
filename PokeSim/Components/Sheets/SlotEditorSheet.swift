@@ -269,6 +269,7 @@ struct SelectMovePage: View {
                                 .foregroundStyle(move.type.colors.accent.opacity(0.5))
                         }
                     }
+                    .contentShape(Rectangle())
                 }
             }
             .buttonStyle(.plain)

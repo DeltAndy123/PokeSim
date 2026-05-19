@@ -7,6 +7,7 @@ import Security
 class AuthManager {
     private(set) var currentUser: UserProfile?
     var isLoggedIn: Bool { currentUser != nil }
+    var token: String? { loadToken() }
     
     private let client: BackendClient
     
@@ -59,8 +60,6 @@ class AuthManager {
         ]
         SecItemDelete(query as CFDictionary)
     }
-    
-    func token() -> String? { loadToken() }
     
     // MARK: - Authentication
     func login(into context: ModelContext, username: String, password: String) async throws {

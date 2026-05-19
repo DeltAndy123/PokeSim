@@ -11,6 +11,7 @@ class BattleSession {
     }
     
     private(set) var phase: Phase = .idle
+    private(set) var movePending = false
     private(set) var lastOutcomes: [MoveOutcome] = []
     private var task: URLSessionWebSocketTask?
     
@@ -31,6 +32,7 @@ class BattleSession {
                     handle(message)
                 }
             } catch {
+                if case .ended = phase { return }
                 phase = .idle
             }
         }
@@ -51,9 +53,11 @@ class BattleSession {
         case .turnResult(let outcomes, let you, let opponent):
             phase = .inBattle(you: you, opponent: opponent)
             lastOutcomes = outcomes
+            movePending = false
         case .battleEnd(let winner, let reason):
             phase = .ended(winner: winner, reason: reason)
-            disconnect()
+            task?.cancel(with: .normalClosure, reason: nil)
+            task = nil
         case .error:
             break
         }
@@ -69,6 +73,7 @@ class BattleSession {
 
     func selectMove(_ moveId: Int) {
         send(.selectMove(moveId: moveId))
+        movePending = true
     }
     func forfeit() {
         send(.forfeit)

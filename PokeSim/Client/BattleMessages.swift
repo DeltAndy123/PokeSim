@@ -54,6 +54,17 @@ enum BattleEndWinner: String, Decodable {
 
 enum BattleEndReason: String, Decodable {
     case knockout, forfeit, disconnect
+
+    func description(winner: BattleEndWinner) -> String {
+        switch (self, winner) {
+        case (.knockout, .you):       "You knocked out your opponent"
+        case (.knockout, .opponent):  "You were knocked out"
+        case (.forfeit, .you):        "Opponent forfeited"
+        case (.forfeit, .opponent):   "You forfeited"
+        case (.disconnect, .you):     "You disconnected"
+        case (.disconnect, .opponent):"Opponent disconnected"
+        }
+    }
 }
 
 enum ServerMessage: Decodable {
