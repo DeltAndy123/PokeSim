@@ -45,6 +45,7 @@ struct MoveOutcome: Decodable {
     let moveId: Int
     let targetUserId: Int
     let damageDealt: Int
+    let effectiveness: Int
     let fainted: Bool
 }
 

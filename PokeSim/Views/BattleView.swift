@@ -2,10 +2,16 @@ import SwiftUI
 import SwiftData
 
 struct BattleView: View {
-    @State private var session = BattleSession()
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) var colorScheme
     @Query(sort: \PokemonTeam.sortIndex) var teams: [PokemonTeam]
+    @State private var session: BattleSession
     @State private var selectedTeam: PokemonTeam?
+    
+    @MainActor
+    init(session: BattleSession? = nil) {
+        _session = State(initialValue: session ?? BattleSession())
+    }
 
     var body: some View {
         NavigationStack {
@@ -94,44 +100,62 @@ struct BattleView: View {
     func battleView(you: BattleSideState, opponent: BattleSideState) -> some View {
         let youActive = you.pokemon[you.activeSlot]
         let oppActive = opponent.pokemon[opponent.activeSlot]
+        let youBgColor = pokemonPrimaryColor(youActive.pokemonId)
+        let oppBgColor = pokemonPrimaryColor(oppActive.pokemonId)
 
-        return VStack(spacing: 0) {
-            HStack(alignment: .bottom) {
-                pokemonCard(pokemonId: oppActive.pokemonId, hp: oppActive.hp)
-                Spacer()
-                AsyncImage(url: spriteURL(oppActive.pokemonId)) { img in
-                    img.resizable().interpolation(.none).scaledToFit()
-                } placeholder: { ProgressView() }
-                .frame(width: 130, height: 130)
-            }
-            .padding()
+        return ZStack {
+            LinearGradient(colors: [youBgColor.opacity(0.25), .clear, oppBgColor.opacity(0.25)], startPoint: .bottom, endPoint: .top)
+                .ignoresSafeArea()
 
-            Spacer()
-
-            HStack(alignment: .bottom) {
-                AsyncImage(url: spriteURL(youActive.pokemonId)) { img in
-                    img.resizable().interpolation(.none).scaledToFit()
-                } placeholder: { ProgressView() }
-                .frame(width: 130, height: 130)
-                Spacer()
-                pokemonCard(pokemonId: youActive.pokemonId, hp: youActive.hp)
-            }
-            .padding()
-
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                ForEach(youActive.moves, id: \.self) { moveId in
-                    Button {
-                        session.selectMove(moveId)
-                    } label: {
-                        Text(moveName(moveId))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(session.movePending)
+            VStack(spacing: 0) {
+                HStack(alignment: .bottom) {
+                    pokemonCard(pokemonId: oppActive.pokemonId, hp: oppActive.hp)
+                    Spacer()
+                    AsyncImage(url: spriteURL(oppActive.pokemonId)) { img in
+                        img.resizable().interpolation(.none).scaledToFit()
+                    } placeholder: { ProgressView() }
+                    .frame(width: 130, height: 130)
                 }
+                .padding()
+
+                Spacer()
+
+                HStack(alignment: .bottom) {
+                    AsyncImage(url: spriteURL(youActive.pokemonId)) { img in
+                        img.resizable().interpolation(.none).scaledToFit()
+                    } placeholder: { ProgressView() }
+                    .frame(width: 130, height: 130)
+                    Spacer()
+                    pokemonCard(pokemonId: youActive.pokemonId, hp: youActive.hp)
+                }
+                .padding()
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(youActive.moves, id: \.self) { (moveID: Int) in
+                        Button {
+                            session.selectMove(moveID)
+                        } label: {
+                            let moveColor = moveColor(moveID)
+                            let moveBG = (colorScheme == .dark ? moveColor?.dim : moveColor?.bg) ?? Color(.secondarySystemBackground)
+                            let moveBorder = (moveColor?.bg ?? Color(.secondarySystemBackground)).opacity(colorScheme == .dark ? 0.25 : 0)
+                            
+                            Text(moveName(moveID))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(moveBG, in: RoundedRectangle(cornerRadius: 10))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(moveBorder, lineWidth: 1)
+                                }
+                        }
+                        .opacity(session.movePending ? 0.5 : 1)
+                        .disabled(session.movePending)
+                    }
+                }
+                .padding()
             }
-            .padding()
         }
         .navigationBarBackButtonHidden()
         .toolbar {
@@ -170,6 +194,15 @@ struct BattleView: View {
         PokemonDatabase.shared.moveName(forMoveID: id, withLanguage: .en)?.name ?? "Move"
     }
 
+    private func moveColor(_ id: Int) -> PokemonType.TypeColors? {
+        guard let move = PokemonDatabase.shared.move(byID: id) else { return nil }
+        return move.type.colors
+    }
+
+    private func pokemonPrimaryColor(_ pokemonId: Int) -> Color {
+        PokemonDatabase.shared.types(forPokemonID: pokemonId).first?.type.colors.bg ?? .clear
+    }
+
     private func pokemonCard(pokemonId: Int, hp: Int) -> some View {
         let max = maxHP(for: pokemonId)
         let fraction = max > 0 ? Double(hp) / Double(max) : 0
@@ -188,6 +221,36 @@ struct BattleView: View {
             }
             .frame(height: 8)
         }
+        .padding(10)
         .frame(width: 160)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(.quaternary, lineWidth: 1)
+        }
     }
+}
+
+#Preview("Idle") {
+    BattleView()
+        .environment(AuthManager())
+        .modelContainer(for: PokemonTeam.self, inMemory: true)
+}
+
+#Preview("In Battle") {
+    let you = BattleSideState(userId: 1, pokemon: [
+        BattlePokemonState(pokemonId: 25, hp: 110, moves: [85, 33, 87, 113])
+    ], activeSlot: 0)
+    let opp = BattleSideState(userId: 2, pokemon: [
+        BattlePokemonState(pokemonId: 6, hp: 153, moves: [53, 52, 394, 240])
+    ], activeSlot: 0)
+    BattleView(session: BattleSession(previewPhase: .inBattle(you: you, opponent: opp)))
+        .environment(AuthManager())
+        .modelContainer(for: PokemonTeam.self, inMemory: true)
+}
+
+#Preview("Ended") {
+    BattleView(session: BattleSession(previewPhase: .ended(winner: .you, reason: .knockout)))
+        .environment(AuthManager())
+        .modelContainer(for: PokemonTeam.self, inMemory: true)
 }

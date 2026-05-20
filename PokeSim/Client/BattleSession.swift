@@ -15,6 +15,12 @@ class BattleSession {
     private(set) var lastOutcomes: [MoveOutcome] = []
     private var task: URLSessionWebSocketTask?
     
+    #if DEBUG
+    init(previewPhase: Phase = .idle) {
+        self.phase = previewPhase
+    }
+    #endif
+    
     func connect(token: String, teamId: Int) {
         var request = URLRequest(url: URL(string: Constants.wsURL)!)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
