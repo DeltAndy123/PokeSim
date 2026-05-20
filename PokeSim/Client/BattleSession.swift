@@ -15,12 +15,10 @@ class BattleSession {
     private(set) var lastOutcomes: [MoveOutcome] = []
     private var task: URLSessionWebSocketTask?
     
-    #if DEBUG
     init(previewPhase: Phase = .idle) {
         self.phase = previewPhase
     }
-    #endif
-    
+
     func connect(token: String, teamId: Int) {
         var request = URLRequest(url: URL(string: Constants.wsURL)!)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -56,12 +54,14 @@ class BattleSession {
         case .battleStart(let you, let opponent):
             phase = .inBattle(you: you, opponent: opponent)
             lastOutcomes = []
+            movePending = false
         case .turnResult(let outcomes, let you, let opponent):
             phase = .inBattle(you: you, opponent: opponent)
             lastOutcomes = outcomes
             movePending = false
         case .battleEnd(let winner, let reason):
             phase = .ended(winner: winner, reason: reason)
+            movePending = false
             task?.cancel(with: .normalClosure, reason: nil)
             task = nil
         case .error:

@@ -45,7 +45,7 @@ struct MoveOutcome: Decodable {
     let moveId: Int
     let targetUserId: Int
     let damageDealt: Int
-    let effectiveness: Int
+    let effectiveness: Double
     let fainted: Bool
 }
 
@@ -62,8 +62,8 @@ enum BattleEndReason: String, Decodable {
         case (.knockout, .opponent):  "You were knocked out"
         case (.forfeit, .you):        "Opponent forfeited"
         case (.forfeit, .opponent):   "You forfeited"
-        case (.disconnect, .you):     "You disconnected"
-        case (.disconnect, .opponent):"Opponent disconnected"
+        case (.disconnect, .you):     "Opponent disconnected"
+        case (.disconnect, .opponent):"You disconnected"
         }
     }
 }
