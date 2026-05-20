@@ -109,7 +109,7 @@ struct BattleView: View {
 
             VStack(spacing: 0) {
                 HStack(alignment: .bottom) {
-                    pokemonCard(pokemonId: oppActive.pokemonId, hp: oppActive.hp)
+                    pokemonCard(pokemonId: oppActive.pokemonId, hp: oppActive.hp, showHP: false)
                     Spacer()
                     AsyncImage(url: spriteURL(oppActive.pokemonId)) { img in
                         img.resizable().interpolation(.none).scaledToFit()
@@ -126,7 +126,7 @@ struct BattleView: View {
                     } placeholder: { ProgressView() }
                     .frame(width: 130, height: 130)
                     Spacer()
-                    pokemonCard(pokemonId: youActive.pokemonId, hp: youActive.hp)
+                    pokemonCard(pokemonId: youActive.pokemonId, hp: youActive.hp, showHP: true)
                 }
                 .padding()
 
@@ -203,7 +203,7 @@ struct BattleView: View {
         PokemonDatabase.shared.types(forPokemonID: pokemonId).first?.type.colors.bg ?? .clear
     }
 
-    private func pokemonCard(pokemonId: Int, hp: Int) -> some View {
+    private func pokemonCard(pokemonId: Int, hp: Int, showHP: Bool) -> some View {
         let max = maxHP(for: pokemonId)
         let fraction = max > 0 ? Double(hp) / Double(max) : 0
         let name = PokemonDatabase.shared.pokemon(byID: pokemonId)?.name.capitalized ?? "???"
@@ -211,7 +211,11 @@ struct BattleView: View {
 
         return VStack(alignment: .leading, spacing: 4) {
             Text(name).font(.headline)
-            Text("\(hp) / \(max)").font(.caption).foregroundStyle(.secondary)
+            if showHP {
+                Text("\(hp) / \(max)").font(.caption).foregroundStyle(.secondary)
+            } else {
+                Spacer().frame(height: 4)
+            }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(.secondary.opacity(0.25))
@@ -221,11 +225,11 @@ struct BattleView: View {
             }
             .frame(height: 8)
         }
-        .padding(10)
+        .padding(12)
         .frame(width: 160)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(.quaternary, lineWidth: 1)
         }
     }
@@ -239,7 +243,7 @@ struct BattleView: View {
 
 #Preview("In Battle") {
     let you = BattleSideState(userId: 1, pokemon: [
-        BattlePokemonState(pokemonId: 25, hp: 110, moves: [85, 33, 87, 113])
+        BattlePokemonState(pokemonId: 25, hp: 110, moves: [85, 33, 344, 113])
     ], activeSlot: 0)
     let opp = BattleSideState(userId: 2, pokemon: [
         BattlePokemonState(pokemonId: 6, hp: 153, moves: [53, 52, 394, 240])
